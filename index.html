@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>القرآن الكريم - تقريب القرآن</title>
+    
+    <!-- استدعاء خطوط عربية -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- استدعاء ملف التصميم (CSS) -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="app-container">
+        
+        <!-- القائمة الجانبية -->
+        <div id="sidebar-overlay" onclick="toggleMenu()"></div>
+        <div id="sidebar">
+            <div class="sidebar-header">
+                <span>القائمة</span>
+                <button class="close-btn" onclick="toggleMenu()">×</button>
+            </div>
+            <ul class="sidebar-menu">
+                <li onclick="toggleMenu()"><span class="icon">🏠</span> الرئيسية (الفهرس)</li>
+                <li onclick="showModal('instructions')"><span class="icon">ℹ️</span> تعليمات الاستخدام</li>
+                <li onclick="showModal('about')"><span class="icon">📖</span> عن التطبيق</li>
+                <li onclick="alert('سيتم إضافة المفضلة قريباً')"><span class="icon">⭐</span> المفضلة</li>
+                <li onclick="alert('سيتم إضافة الإعدادات قريباً')"><span class="icon">⚙️</span> الإعدادات</li>
+            </ul>
+        </div>
+
+        <!-- شاشة الفهرس -->
+        <div id="index-screen">
+            <div class="header-index">
+                <button class="menu-btn" onclick="toggleMenu()">☰</button>
+                <div class="header-titles">
+                    <h1>القرآن الكريم</h1>
+                    <h2>وتفسير تقريب القرآن للسيد محمد الحسيني الشيرازي رحمه الله</h2>
+                </div>
+                <div style="width: 30px;"></div>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" placeholder="ابحث عن سورة..." id="search-input" oninput="renderSurahs(this.value)">
+            </div>
+            
+            <div class="surah-list" id="surah-list">
+                <!-- سيتم توليد السور هنا بواسطة JS -->
+            </div>
+        </div>
+
+        <!-- شاشة القراءة -->
+        <div id="reading-screen">
+            <div class="header-reading">
+                <button class="back-btn" onclick="closeSurah()">&#8594;</button>
+                <div>
+                    <div class="surah-title" id="reading-title">سورة الفاتحة</div>
+                    <div class="source-info">تفسير: تقريب القرآن</div>
+                </div>
+                <div style="width: 24px;"></div>
+            </div>
+            
+            <div class="quran-text-container">
+                <div class="quran-text" id="quran-text">
+                    <!-- سيتم وضع الآيات هنا -->
+                </div>
+            </div>
+
+            <button class="fab-save" title="حفظ النص">💾</button>
+        </div>
+
+        <!-- نافذة التفسير -->
+        <div id="tafsir-overlay" onclick="closeTafsir()"></div>
+        <div id="tafsir-sheet">
+            <div class="sheet-handle"></div>
+            <div class="tafsir-title">تفسير الآية</div>
+            <div class="tafsir-content" id="tafsir-text"></div>
+        </div>
+
+        <!-- نافذة تعليمات الاستخدام -->
+        <div class="custom-modal" id="modal-instructions">
+            <h3>تعليمات الاستخدام</h3>
+            <p>1. اضغط على أي سورة من الفهرس لفتحها.<br>
+               2. للاطلاع على التفسير، اضغط ضغطة مطولة (لمدة ثانية) على أي آية داخل الصفحة.<br>
+               3. يمكنك استخدام شريط البحث في الأعلى للوصول السريع للسور.<br>
+               4. استخدم زر القائمة للوصول لخيارات أخرى.</p>
+            <button onclick="closeModal('instructions')">حسناً، فهمت</button>
+        </div>
+
+        <!-- نافذة عن التطبيق -->
+        <div class="custom-modal" id="modal-about">
+            <h3>عن التطبيق</h3>
+            <p>هذا التطبيق هو مصحف إلكتروني مخصص لقراءة القرآن الكريم مع تفسير "تقريب القرآن" للسيد محمد الحسيني الشيرازي (رحمه الله).<br><br>
+               تم تصميمه ليكون بسيطاً ومريحاً للعين، مع واجهة عربية أصيلة.</p>
+            <button onclick="closeModal('about')">إغلاق</button>
+        </div>
+
+    </div>
+
+    <!-- استدعاء ملف البيانات (Data) -->
+    <script src="data.js"></script>
+    <!-- استدعاء ملف البرمجة (Logic) -->
+    <script src="app.js"></script>
+</body>
+</html>
