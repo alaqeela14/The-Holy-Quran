@@ -46,9 +46,6 @@ function openSurah(surahName, surahId) {
             contentHTML += `<span class="verse" data-tafsir="${verse.tafsir.replace(/"/g, '&quot;')}">${verse.text} <span class="verse-number">${displayNum}</span> </span> `;
         });
         
-        if (surahId === 2) {
-             contentHTML += `<br><br><p style="text-align:center; color:#7a6b5d; font-family:'Tajawal'; font-size: 1rem;">(نهاية الملف المرفق - تم إدراج أول 25 آية من سورة البقرة فقط)</p>`;
-        }
     } else {
         contentHTML = `
             <p style="text-align:center; color:#7a6b5d; margin-top:20px; font-family:'Tajawal';">(هذا نص تجريبي لسورة ${surahName}، سيتم ربطه بقاعدة بيانات القرآن لاحقاً)</p>
