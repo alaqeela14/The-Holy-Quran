@@ -24,7 +24,7 @@ function normalize(value){
 }
 function loadFavorites(){try{const v=JSON.parse(localStorage.getItem("quran-favorite-surahs")||"[]");return new Set(Array.isArray(v)?v.map(Number).filter(Number.isInteger):[]);}catch(_){return new Set();}}
 function saveFavorites(){try{localStorage.setItem("quran-favorite-surahs",JSON.stringify([...state.favorites]));}catch(_){}}
-function loadFontSize(){try{const v=Number(localStorage.getItem("quran-font-size"));return Number.isFinite(v)&&v>=1.4&&v<=2.8?v:1.8;}catch(_){return 1.8;}}
+function loadFontSize(){try{const v=Number(localStorage.getItem("quran-font-size-v2"));return Number.isFinite(v)&&v>=1.4&&v<=2.8?v:1.4;}catch(_){return 1.8;}}
 function applyFontSize(){document.documentElement.style.setProperty("--quran-font-size",state.fontSize+"rem");}
 function validateData(){
  if(!Array.isArray(surahsData)||surahsData.length!==114||!quranData)return "تعذر تحميل قاعدة بيانات القرآن.";
@@ -84,7 +84,7 @@ function saveCurrentSurah(){
  const blob=new Blob(["\uFEFF"+lines.join("\n\n")],{type:"text/plain;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");
  a.href=url;a.download="سورة-"+name+".txt";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1200);
 }
-function adjustFontSize(delta){state.fontSize=Math.max(1.4,Math.min(2.8,Math.round((state.fontSize+delta)*10)/10));applyFontSize();try{localStorage.setItem("quran-font-size",String(state.fontSize));}catch(_){}}
+function adjustFontSize(delta){state.fontSize=Math.max(1.4,Math.min(2.8,Math.round((state.fontSize+delta)*10)/10));applyFontSize();try{localStorage.setItem("quran-font-size-v2",String(state.fontSize));}catch(_){}}
 function showModal(type){toggleMenu(false);const el=document.getElementById("modal-"+type);if(el){el.classList.add("active");el.setAttribute("aria-hidden","false");}}
 function closeModal(type){const el=document.getElementById("modal-"+type);if(el){el.classList.remove("active");el.setAttribute("aria-hidden","true");}}
 function showError(message){appStatus.hidden=false;appStatus.textContent=message;}
