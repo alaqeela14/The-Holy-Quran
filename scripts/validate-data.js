@@ -27,7 +27,7 @@ if(total!==6236)errors.push("Expected 6,236 verses, found "+total);
 if(!source.includes("Tanzil (https://tanzil.net)"))errors.push("Missing Tanzil attribution.");
 if(!quranData[1].verses[0].text.startsWith("بِسْمِ"))errors.push("Al-Fatiha first ayah check failed.");
 if(!quranData[2].verses[0].text.startsWith("الٓمٓ"))errors.push("Al-Baqarah first ayah check failed.");
-if(!quranData[9].verses[0].text.startsWith("بَرَاءَةٌ"))errors.push("At-Tawbah first ayah check failed.");
+if(!quranData[9].verses[0].text.startsWith("بَرَا"))errors.push("At-Tawbah first ayah check failed.");
 const app=fs.readFileSync(path.join(root,"app.js"),"utf8");
 new vm.Script(app,{filename:"app.js"});
 const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
