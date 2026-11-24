@@ -1,4 +1,4 @@
-:root{--bg-color:#fcf9f2;--surface-color:#fff;--primary-color:#c9a063;--primary-dark:#9a713d;--text-dark:#332211;--text-light:#7a6b5d;--border-color:#e6dfd3;--quran-font-size:1.8rem}
+:root{--bg-color:#fcf9f2;--surface-color:#fff;--primary-color:#c9a063;--primary-dark:#9a713d;--text-dark:#332211;--text-light:#7a6b5d;--border-color:#e6dfd3;--quran-font-size:1.4rem}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{min-height:100%}body{font-family:"Tajawal",sans-serif;background:#e5e5e5;display:flex;justify-content:center;min-height:100vh;min-height:100dvh;overflow:hidden}
 button,input{font:inherit}button{cursor:pointer}
