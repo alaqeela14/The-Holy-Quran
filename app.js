@@ -24,7 +24,7 @@ function normalize(value){
 }
 function loadFavorites(){try{const v=JSON.parse(localStorage.getItem("quran-favorite-surahs")||"[]");return new Set(Array.isArray(v)?v.map(Number).filter(Number.isInteger):[]);}catch(_){return new Set();}}
 function saveFavorites(){try{localStorage.setItem("quran-favorite-surahs",JSON.stringify([...state.favorites]));}catch(_){}}
-function loadFontSize(){try{const v=Number(localStorage.getItem("quran-font-size-v2"));return Number.isFinite(v)&&v>=1.4&&v<=2.8?v:1.4;}catch(_){return 1.8;}}
+function loadFontSize(){try{const v=Number(localStorage.getItem("quran-font-size-v2"));return Number.isFinite(v)&&v>=1.4&&v<=2.8?v:1.4;}catch(_){return 1.4;}}
 function applyFontSize(){document.documentElement.style.setProperty("--quran-font-size",state.fontSize+"rem");}
 function validateData(){
  if(!Array.isArray(surahsData)||surahsData.length!==114||!quranData)return "تعذر تحميل قاعدة بيانات القرآن.";
