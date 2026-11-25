@@ -1,5 +1,5 @@
 "use strict";
-const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
+const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm"),{execFileSync}=require("node:child_process");
 const root=path.join(__dirname,"..");
 const shards=fs.readdirSync(root).filter(x=>/^data-\d{2}\.js$/.test(x)).sort();
 if(!shards.length)throw new Error("Quran data shards are missing.");
@@ -53,5 +53,11 @@ if(pageShards.length)errors.push("Data shards must be loaded on demand, not all 
 if(scriptRefs.length!==2||scriptRefs[0]!=="data.js"||scriptRefs[1]!=="app.js")errors.push("HTML must load only metadata first and app.js last.");
 for(const ref of scriptRefs)if(!fs.existsSync(path.join(root,ref)))errors.push("Missing script asset: "+ref);
 if(errors.length){console.error(errors.slice(0,50).join("\n"));process.exit(1);}
+execFileSync(process.execPath,[path.join(root,"scripts/prepare-web.js")],{stdio:"inherit"});
+const webRoot=path.join(root,"www");
+const webFiles=fs.readdirSync(webRoot);
+const webShards=webFiles.filter(x=>/^data-\\d{2}\\.js$/.test(x));
+if(!webFiles.includes("index.html")||!webFiles.includes("sw.js")||webShards.length!==22)throw new Error("Prepared Android web bundle is incomplete.");
+console.log("Android web bundle validation passed.");
 console.log("Quran data and reader validation passed.");
 console.log("Surahs: 114 | Ayahs: "+total+" | Ayahs with tafsir: "+tafsir+" | Data shards validated: "+shards.length+" (loaded on demand by the reader).");
