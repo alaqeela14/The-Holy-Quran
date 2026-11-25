@@ -30,7 +30,22 @@ if(!quranData[2].verses[0].text.startsWith("الٓمٓ"))errors.push("Al-Baqarah
 if(!quranData[9].verses[0].text.startsWith("بَرَا"))errors.push("At-Tawbah first ayah check failed.");
 const app=fs.readFileSync(path.join(root,"app.js"),"utf8");
 new vm.Script(app,{filename:"app.js"});
+for(const file of ["sw.js","scripts/prepare-web.js"])new vm.Script(fs.readFileSync(path.join(root,file),"utf8"),{filename:file});
+const appMapMatch=app.match(/const DATA_SHARD_BY_SURAH=(\\{[^;]+\\});/);
+if(!appMapMatch)errors.push("Missing surah-to-shard loading map.");
+else{
+ const map=JSON.parse(appMapMatch[1]);
+ for(const [id] of surahsData){
+  const shard=map[id],file="data-"+String(shard).padStart(2,"0")+".js";
+  if(!shard||!shards.includes(file)||!new RegExp("^\\\\s*"+id+"\\\\s*:").test(fs.readFileSync(path.join(root,file),"utf8")))errors.push("Invalid lazy-load shard mapping for surah "+id+".");
+ }
+}
+const manifest=JSON.parse(fs.readFileSync(path.join(root,"manifest.webmanifest"),"utf8"));
+const capacitor=JSON.parse(fs.readFileSync(path.join(root,"capacitor.config.json"),"utf8"));
+if(!manifest.name||manifest.lang!=="ar"||manifest.dir!=="rtl")errors.push("Arabic app manifest is incomplete.");
+if(capacitor.webDir!=="www"||capacitor.appName!=="القرآن الكريم")errors.push("Capacitor app configuration is invalid.");
 const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
+if(!html.includes('rel="manifest"')||!html.includes('serviceWorker.register("./sw.js")'))errors.push("PWA manifest or service worker registration is missing.");
 const scriptRefs=[...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m=>m[1]);
 const pageShards=scriptRefs.filter(x=>/^data-\d{2}\.js$/.test(x));
 if(pageShards.length)errors.push("Data shards must be loaded on demand, not all during initial page load.");
