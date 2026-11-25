@@ -76,3 +76,38 @@ button,input{font:inherit}button{cursor:pointer}
 
 \n/* الوضع الليلي */\nbody.night-mode{--bg-color:#171a18;--surface-color:#222725;--primary-color:#b99a68;--primary-dark:#d5b47d;--text-dark:#eee8df;--text-light:#b5aaa0;--border-color:#414743;background:#101211}body.night-mode #app-container,body.night-mode #reading-screen,body.night-mode .header-index,body.night-mode .search-container,body.night-mode .header-reading,body.night-mode .surah-item,body.night-mode .custom-modal,body.night-mode #verse-options-sheet,body.night-mode #tafsir-sheet{background:var(--surface-color);color:var(--text-dark)}body.night-mode .surah-item,body.night-mode .search-container input,body.night-mode .verse-number{background:#292e2b;color:var(--text-dark)}body.night-mode .opt-btn{background:transparent;color:var(--text-dark)}body.night-mode .opt-btn:active{background:#3b403c}body.night-mode .night-btn{background:#292e2b;color:var(--text-dark)}body.night-mode .quran-text{color:var(--text-dark)}body.night-mode .verse-number{border-color:var(--primary-color)}body.night-mode .favorite-verse-row{border-color:var(--border-color);color:var(--text-dark)}.favorite-verse-row{white-space:pre-wrap;text-align:right;line-height:1.9;padding:12px 0;border-bottom:1px solid var(--border-color)}.favorite-verse-row button{display:block;margin-top:8px}\n
 html[data-quran-font="noto"] .quran-text{font-family:"Noto Naskh Arabic",serif}html[data-quran-font="scheherazade"] .quran-text{font-family:"Scheherazade New",serif}html[data-quran-font="amiri"] .quran-text{font-family:"Amiri",serif}
+
+/* وضع ليلي كحلي متناسق */
+body.night-mode{--bg-color:#101b2b;--surface-color:#172438;--primary-color:#c5a46b;--primary-dark:#e1c18a;--text-dark:#f4f5f8;--text-light:#c0cad8;--border-color:#30445e;background:#0b1422;color:#f4f5f8}
+body.night-mode #app-container,body.night-mode #index-screen,body.night-mode #reading-screen,body.night-mode .header-index,body.night-mode .search-container,body.night-mode .header-reading,body.night-mode .surah-item,body.night-mode .custom-modal,body.night-mode #verse-options-sheet,body.night-mode #tafsir-sheet,body.night-mode .quran-text-container{background:#172438;color:#f4f5f8}
+body.night-mode .header-titles h1,body.night-mode .surah-name,body.night-mode .surah-title,body.night-mode .quran-text,body.night-mode .tafsir-content,body.night-mode .custom-modal p,body.night-mode .verse-details .val{color:#f4f5f8}
+body.night-mode .header-titles h2,body.night-mode .surah-info,body.night-mode .source-info,body.night-mode .verse-details .label{color:#c0cad8}
+body.night-mode .search-container input,body.night-mode .opt-btn,body.night-mode #note-text,body.night-mode select{background:#22334b;color:#f4f5f8;border-color:#30445e}
+body.night-mode .surah-number,body.night-mode .verse-number{background:#22334b;color:#e1c18a;border-color:#c5a46b}
+body.night-mode .basmala{color:#e1c18a}
+body.night-mode .list-status,body.night-mode .app-status{background:#20334a;color:#e1c18a}
+body.night-mode .night-btn{width:30px;height:30px;min-width:30px;border:1px solid #435875;border-radius:50%;background:#22334b;color:#f4f5f8;font-size:.85rem;padding:0;display:inline-flex;align-items:center;justify-content:center}
+body.night-mode .opt-btn{color:#f4f5f8}
+body.night-mode .opt-icon{color:#e1c18a}
+body.night-mode .opt-btn:active{background:#30445e}
+body.night-mode .favorite-btn{background:#22334b;color:#e1c18a}
+body.night-mode .modal-close,body.night-mode .custom-modal button{background:#c5a46b;color:#101b2b}
+body.night-mode .verse-options-title,body.night-mode .tafsir-title{color:#e1c18a;border-color:#30445e}
+body.night-mode .sheet-handle{background:#52647b}
+body.night-mode .share-preview{background:#22334b;color:#f4f5f8;border-color:#30445e}
+body.night-mode .favorite-verse-row{border-color:#30445e;color:#f4f5f8}
+body.night-mode #sidebar{background:#172438;color:#f4f5f8}
+body.night-mode .sidebar-action{color:#f4f5f8}
+body.night-mode .sidebar-menu li,body.night-mode .sidebar-footer{border-color:#30445e}
+body.night-mode .sidebar-footer{color:#c0cad8}
+body.night-mode .verse-options-overlay{background:#09111d}
+body.night-mode #verse-options-overlay,body.night-mode #tafsir-overlay{background:#09111d99}
+/* تصغير قائمة خيارات الآية */
+#verse-options-sheet{width:min(82%,360px);aspect-ratio:1/1;max-height:80%;padding:10px 9px;border-radius:15px}
+.verse-options-title{font-size:1rem;margin-bottom:6px;padding-bottom:6px}
+.verse-options-content{gap:1px;padding:2px 0}
+.opt-btn{padding:3px;gap:4px;border-radius:8px;font-size:.78rem;line-height:1.2}
+.opt-icon{font-size:1.45rem}
+.opt-label{font-size:.78rem;line-height:1.25}
+.opt-close{margin-top:4px}
+@media(max-width:380px){#verse-options-sheet{width:min(84%,320px)}.opt-icon{font-size:1.3rem}.opt-label{font-size:.74rem}}
