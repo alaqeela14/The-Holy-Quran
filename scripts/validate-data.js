@@ -56,7 +56,7 @@ if(errors.length){console.error(errors.slice(0,50).join("\n"));process.exit(1);}
 execFileSync(process.execPath,[path.join(root,"scripts/prepare-web.js")],{stdio:"inherit"});
 const webRoot=path.join(root,"www");
 const webFiles=fs.readdirSync(webRoot);
-const webShards=webFiles.filter(x=>/^data-\\d{2}\\.js$/.test(x));
+const webShards=webFiles.filter(x=>/^data-\d{2}\.js$/.test(x));
 if(!webFiles.includes("index.html")||!webFiles.includes("sw.js")||webShards.length!==22)throw new Error("Prepared Android web bundle is incomplete.");
 console.log("Android web bundle validation passed.");
 console.log("Quran data and reader validation passed.");
