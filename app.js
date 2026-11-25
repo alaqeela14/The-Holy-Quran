@@ -119,6 +119,14 @@ function setDarkMode(enabled) {
     if (darkModeBtn) darkModeBtn.textContent = enabled ? '☀️' : '🌙';
 }
 
+
+function closeMenuIfOpen() {
+    const sidebar=document.getElementById('sidebar');
+    const overlay=document.getElementById('sidebar-overlay');
+    if (sidebar && sidebar.classList.contains('active')) sidebar.classList.remove('active');
+    if (overlay && overlay.classList.contains('active')) overlay.classList.remove('active');
+}
+
 // --- البدء ---
 
 function startApp() {
@@ -139,8 +147,10 @@ function toggleMenu() {
 }
 
 function showSections() {
+    currentMode = 'quran';
     sectionScreen.classList.add('active');
     renderSectionSurahs();
+    closeMenuIfOpen();
 }
 
 function backToSections() {
@@ -152,21 +162,21 @@ function showTafsirSection() {
     currentMode = 'tafsir';
     sectionScreen.classList.add('active');
     renderSectionSurahs();
-    toggleMenu();
+    closeMenuIfOpen();
 }
 
 function showAudioSection() {
     currentMode = 'audio';
     sectionScreen.classList.add('active');
     renderSectionSurahs();
-    toggleMenu();
+    closeMenuIfOpen();
 }
 
 function showQuranSection() {
     currentMode = 'quran';
     sectionScreen.classList.add('active');
     renderSectionSurahs();
-    toggleMenu();
+    closeMenuIfOpen();
 }
 
 function showFavorites() {
