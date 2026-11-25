@@ -37,7 +37,8 @@ else{
  const map=JSON.parse(appMapMatch[1]);
  for(const [id] of surahsData){
   const shard=map[id],file="data-"+String(shard).padStart(2,"0")+".js";
-  if(!shard||!shards.includes(file)||!new RegExp("^\\s*"+id+"\\s*:").test(fs.readFileSync(path.join(root,file),"utf8")))errors.push("Invalid lazy-load shard mapping for surah "+id+".");
+  const shardSource=shard&&shards.includes(file)?fs.readFileSync(path.join(root,file),"utf8"):"";
+  if(!shardSource.split(/\r?\n/).some(line=>new RegExp("^\\s*"+id+"\\s*:").test(line)))errors.push("Invalid lazy-load shard mapping for surah "+id+".");
  }
 }
 const manifest=JSON.parse(fs.readFileSync(path.join(root,"manifest.webmanifest"),"utf8"));
