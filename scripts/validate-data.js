@@ -31,13 +31,13 @@ if(!quranData[9].verses[0].text.startsWith("بَرَا"))errors.push("At-Tawbah 
 const app=fs.readFileSync(path.join(root,"app.js"),"utf8");
 new vm.Script(app,{filename:"app.js"});
 for(const file of ["sw.js","scripts/prepare-web.js"])new vm.Script(fs.readFileSync(path.join(root,file),"utf8"),{filename:file});
-const appMapMatch=app.match(/const DATA_SHARD_BY_SURAH=(\\{[^;]+\\});/);
+const appMapMatch=app.match(/const DATA_SHARD_BY_SURAH=(\{[^;]+\});/);
 if(!appMapMatch)errors.push("Missing surah-to-shard loading map.");
 else{
  const map=JSON.parse(appMapMatch[1]);
  for(const [id] of surahsData){
   const shard=map[id],file="data-"+String(shard).padStart(2,"0")+".js";
-  if(!shard||!shards.includes(file)||!new RegExp("^\\\\s*"+id+"\\\\s*:").test(fs.readFileSync(path.join(root,file),"utf8")))errors.push("Invalid lazy-load shard mapping for surah "+id+".");
+  if(!shard||!shards.includes(file)||!new RegExp("^\\s*"+id+"\\s*:").test(fs.readFileSync(path.join(root,file),"utf8")))errors.push("Invalid lazy-load shard mapping for surah "+id+".");
  }
 }
 const manifest=JSON.parse(fs.readFileSync(path.join(root,"manifest.webmanifest"),"utf8"));
