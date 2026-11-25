@@ -134,6 +134,13 @@ function startApp() {
     showSections();
 }
 
+function enterWelcomeSection(section) {
+    welcomeScreen.classList.remove('active');
+    if (section === 'tafsir') showTafsirSection();
+    else if (section === 'audio') showAudioSection();
+    else showQuranSection();
+}
+
 function backToWelcome() {
     sectionScreen.classList.remove('active');
     welcomeScreen.classList.add('active');
