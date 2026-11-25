@@ -18,7 +18,7 @@
 <div class="sidebar-header"><span>القائمة</span><button class="close-btn" type="button" onclick="toggleMenu(false)" aria-label="إغلاق القائمة">×</button></div>
 <ul class="sidebar-menu">
 <li><button type="button" class="sidebar-action" onclick="showAllSurahs()">🏠 الرئيسية (الفهرس)</button></li>
-<li><button type="button" class="sidebar-action" onclick="showFavorites()">⭐ السور المفضلة</button></li>
+<li><button type="button" class="sidebar-action" onclick="showFavorites()">⭐ السور المفضلة</button></li><li><button type="button" class="sidebar-action" onclick="showVerseFavorites()">📌 الآيات المفضلة</button></li>
 <li><button type="button" class="sidebar-action" onclick="showModal('instructions')">ℹ️ تعليمات الاستخدام</button></li>
 <li><button type="button" class="sidebar-action" onclick="showModal('settings')">⚙️ إعدادات القراءة</button></li>
 <li><button type="button" class="sidebar-action" onclick="showModal('about')">📖 عن التطبيق</button></li>
@@ -29,7 +29,7 @@
 <header class="header-index">
 <button class="menu-btn" type="button" onclick="toggleMenu()" aria-label="فتح القائمة">☰</button>
 <div class="header-titles"><h1>القرآن الكريم</h1><h2>وتفسير تقريب القرآن للسيد محمد الحسيني الشيرازي رحمه الله</h2></div>
-<div class="header-spacer"></div>
+<button class="night-btn" id="night-btn" type="button" onclick="toggleNightMode()" aria-label="تفعيل الوضع الليلي" title="الوضع الليلي">☾</button>
 </header>
 <div class="search-container"><input type="search" placeholder="ابحث عن سورة أو رقمها..." id="search-input" oninput="renderSurahs(this.value)" aria-label="البحث عن سورة"></div>
 <div id="list-status" class="list-status" hidden></div>
@@ -43,7 +43,7 @@
 <button class="favorite-btn" id="favorite-btn" type="button" onclick="toggleFavorite()" aria-label="إضافة إلى المفضلة" aria-pressed="false">☆</button>
 </header>
 <div class="quran-text-container" id="reading-scroll"><div class="quran-text" id="quran-text"></div></div>
-<button class="fab-save" type="button" onclick="saveCurrentSurah()" title="حفظ السورة نصياً" aria-label="حفظ السورة نصياً">⬇</button>
+
 </section>
 <div id="tafsir-overlay" onclick="closeTafsir()" aria-hidden="true"></div>
 <section id="tafsir-sheet" role="dialog" aria-modal="true" aria-labelledby="tafsir-heading" aria-hidden="true">
