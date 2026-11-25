@@ -15,51 +15,58 @@
 
     <div id="app-container">
         
-        <!-- القائمة الجانبية -->
-        <div id="sidebar-overlay" onclick="toggleMenu()"></div>
-        <div id="sidebar">
-            <div class="sidebar-header">
-                <span>القائمة</span>
-                <button class="close-btn" onclick="toggleMenu()">×</button>
+        <!-- ========= صفحة الترحيب ========= -->
+        <div id="welcome-screen" class="welcome-screen active">
+            <div class="welcome-content">
+                <span class="welcome-logo">📖</span>
+                <h1 class="welcome-title">القرآن الكريم</h1>
+                <div class="welcome-subtitle">وتفسير تقريب القرآن</div>
+                <p class="welcome-desc">للسيد محمد الحسيني الشيرازي رحمه الله<br>مصحف إلكتروني مع تفسير صوتي ونصي</p>
+                
+                <div class="welcome-features">
+                    <div class="feature-item"><span class="feature-icon">🔊</span><span>تفسير صوتي لكل آية</span></div>
+                    <div class="feature-item"><span class="feature-icon">📖</span><span>تفسير نصي كامل</span></div>
+                    <div class="feature-item"><span class="feature-icon">⭐</span><span>قائمة المفضلة</span></div>
+                    <div class="feature-item"><span class="feature-icon">📝</span><span>ملاحظات شخصية</span></div>
+                    <div class="feature-item"><span class="feature-icon">🌙</span><span>وضع ليلي ونهاري</span></div>
+                    <div class="feature-item"><span class="feature-icon">🔤</span><span>تعديل حجم النص</span></div>
+                </div>
+                
+                <button class="welcome-btn" onclick="startApp()">بدء الاستخدام</button>
+                <div class="welcome-version">الإصدار 2.0</div>
             </div>
-            <ul class="sidebar-menu">
-                <li onclick="toggleMenu()"><span class="icon">🏠</span> الرئيسية (الفهرس)</li>
-                <li onclick="showModal('instructions')"><span class="icon">ℹ️</span> تعليمات الاستخدام</li>
-                <li onclick="showModal('about')"><span class="icon">📖</span> عن التطبيق</li>
-                <li onclick="alert('سيتم إضافة المفضلة قريباً')"><span class="icon">⭐</span> المفضلة</li>
-                <li onclick="alert('سيتم إضافة الإعدادات قريباً')"><span class="icon">⚙️</span> الإعدادات</li>
-            </ul>
         </div>
 
-        <!-- شاشة الفهرس -->
-        <div id="index-screen">
-            <div class="header-index">
-                <button class="menu-btn" onclick="toggleMenu()">☰</button>
-                <div class="header-titles">
-                    <h1>القرآن الكريم</h1>
-                    <h2>وتفسير تقريب القرآن للسيد محمد الحسيني الشيرازي رحمه الله</h2>
-                </div>
-                <div style="width: 30px;"></div>
+        <!-- ========= شاشة الأقسام ========= -->
+        <div id="section-screen" class="section-screen">
+            <div class="section-header">
+                <button class="back-btn" onclick="backToWelcome()">☰</button>
+                <div class="section-title">اختر القسم</div>
+                <button class="menu-btn" onclick="toggleMenu()" style="background:none;border:none;font-size:1.5rem;color:var(--primary-color);">☰</button>
             </div>
             
             <div class="search-container">
-                <input type="text" placeholder="ابحث عن سورة..." id="search-input" oninput="renderSurahs(this.value)">
+                <input type="text" id="section-search" placeholder="ابحث عن سورة..." oninput="filterSurahs(this.value)">
             </div>
             
-            <div class="surah-list" id="surah-list">
-                <!-- سيتم توليد السور هنا بواسطة JS -->
+            <div class="surah-list" id="section-surah-list">
+                <!-- سيتم ملء السور هنا -->
             </div>
         </div>
 
-        <!-- شاشة القراءة -->
-        <div id="reading-screen">
+        <!-- ========= شاشة القراءة ========= -->
+        <div id="reading-screen" class="reading-screen">
             <div class="header-reading">
-                <button class="back-btn" onclick="closeSurah()">&#8594;</button>
-                <div>
-                    <div class="surah-title" id="reading-title">سورة الفاتحة</div>
-                    <div class="source-info">تفسير: تقريب القرآن</div>
+                <button class="back-btn" onclick="backToSections()">←</div>
+                <div class="reading-info">
+                    <h1 id="reading-title">سورة</h1>
+                    <div class="mode-badge" id="reading-mode-badge">النص</div>
                 </div>
-                <div style="width: 24px;"></div>
+                <div class="header-actions">
+                    <button class="font-size-btn" onclick="decreaseFontSize()">A-</button>
+                    <button class="font-size-btn" onclick="increaseFontSize()">A+</button>
+                    <button class="font-size-btn" onclick="toggleDarkMode()" id="dark-mode-btn">🌙</button>
+                </div>
             </div>
             
             <div class="quran-text-container">
@@ -67,29 +74,172 @@
                     <!-- سيتم وضع الآيات هنا -->
                 </div>
             </div>
-
-            <button class="fab-save" title="حفظ النص">💾</button>
+            
+            <div class="reading-footer">
+                <span id="reading-footer-text"></span>
+            </div>
         </div>
 
-        <!-- نافذة التفسير -->
+        <!-- ========= القائمة الجانبية ========= -->
+        <div id="sidebar-overlay" onclick="toggleMenu()"></div>
+        <div id="sidebar">
+            <div class="sidebar-header">
+                <span>القائمة</span>
+                <button class="close-btn" onclick="toggleMenu()">×</button>
+            </div>
+            <ul class="sidebar-menu">
+                <li onclick="toggleMenu(); showSections()"><span class="icon">📖</span> القرآن الكريم</li>
+                <li onclick="toggleMenu(); showTafsirSection()"><span class="icon">📜</span> التفسير</li>
+                <li onclick="toggleMenu(); showAudioSection()"><span class="icon">🔊</span> القرآن الصوتي</li>
+                <li onclick="toggleMenu(); showFavorites()"><span class="icon">⭐</span> المفضلة</li>
+                <li onclick="toggleMenu(); openSettings()"><span class="icon">⚙️</span> الإعدادات</li>
+                <li onclick="toggleMenu(); showModal('about')"><span class="icon">ℹ️</span> عن التطبيق</li>
+            </ul>
+        </div>
+
+        <!-- ========= شريط Float Bottom (حفظ، شارة) ========= -->
+        <button class="fab-save" title="حفظ النص" id="fab-btn" onclick="fabAction()">💾</button>
+
+        <!-- ========= نافذة خيارات الآية ========= -->
+        <div id="verse-options-overlay" onclick="closeVerseOptions()"></div>
+        <div id="verse-options-sheet">
+            <div class="options-handle"></div>
+            <div class="options-title">اختر إجراءً للآية</div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="playAudioTafsir()">
+                    <span class="icon">🔊</span><span>تفسير صوتي</span>
+                </button>
+                <button class="option-btn" onclick="openAudioRange()">
+                    <span class="icon">🎵</span><span>إستماع إلى...</span>
+                </button>
+                <button class="option-btn" onclick="playVerseOnly()">
+                    <span class="icon">▶️</span><span>إستماع الآية</span>
+                </button>
+                <button class="option-btn" onclick="showTextTafsir()">
+                    <span class="icon">📖</span><span>تفسير (نص)</span>
+                </button>
+                <button class="option-btn" onclick="openNotes()">
+                    <span class="icon">📝</span><span>ملاحظة</span>
+                </button>
+                <button class="option-btn" onclick="toggleFavoriteVerse()">
+                    <span class="icon" id="fav-icon">☆</span><span id="fav-text">تفضيل</span>
+                </button>
+                <button class="option-btn" onclick="showVerseDetails()">
+                    <span class="icon">ℹ️</span><span>تفاصيل الآية</span>
+                </button>
+                <button class="option-btn" onclick="shareVerse()">
+                    <span class="icon">📤</span><span>مشاركة</span>
+                </button>
+                <button class="option-btn" onclick="copyVerse()">
+                    <span class="icon">📋</span><span>نسخ</span>
+                </button>
+                <button class="option-btn" onclick="downloadAudio()">
+                    <span class="icon">⬇️</span><span>تحميل صوتي</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ========= نافذة التفسير ========= -->
         <div id="tafsir-overlay" onclick="closeTafsir()"></div>
         <div id="tafsir-sheet">
             <div class="sheet-handle"></div>
             <div class="tafsir-title">تفسير الآية</div>
             <div class="tafsir-content" id="tafsir-text"></div>
+            <div class="tafsir-actions">
+                <button class="tafsir-btn" onclick="playAudioTafsir()">🔊 تشغيل التفسير</button>
+                <button class="tafsir-btn" onclick="copyVerse()">📋 نسخ الآية</button>
+            </div>
         </div>
 
-        <!-- نافذة تعليمات الاستخدام -->
-        <div class="custom-modal" id="modal-instructions">
-            <h3>تعليمات الاستخدام</h3>
-            <p>1. اضغط على أي سورة من الفهرس لفتحها.<br>
-               2. للاطلاع على التفسير، اضغط ضغطة مطولة (لمدة ثانية) على أي آية داخل الصفحة.<br>
-               3. يمكنك استخدام شريط البحث في الأعلى للوصول السريع للسور.<br>
-               4. استخدم زر القائمة للوصول لخيارات أخرى.</p>
-            <button onclick="closeModal('instructions')">حسناً، فهمت</button>
+        <!-- ========= نافذة الاستماع المتقدم ========= -->
+        <div id="audio-range-overlay" onclick="closeAudioRange()"></div>
+        <div id="audio-range-sheet">
+            <div class="range-title">إستماع من الآية إلى</div>
+            <div class="range-labels">
+                <span>الآية</span><span>إلى النهاية</span>
+            </div>
+            <input type="range" class="range-input" id="range-end">
+            <div class="range-controls">
+                <label>من:</label>
+                <input type="number" id="range-start" min="1">
+                <label>إلى:</label>
+                <input type="number" id="range-end-input">
+            </div>
+            <button class="range-btn" onclick="startRangeAudio()">بدء التشغيل</button>
+            <button class="range-btn" style="background-color: var(--text-light);" onclick="closeAudioRange()">إلغاء</button>
         </div>
 
-        <!-- نافذة عن التطبيق -->
+        <!-- ========= نافذة الملاحظات ========= -->
+        <div id="notes-overlay" onclick="closeNotes()"></div>
+        <div id="notes-sheet">
+            <div class="notes-title">إضافة ملاحظة للآية</div>
+            <textarea class="notes-textarea" id="notes-textarea" placeholder="أكتب ملاحظتك هنا..."></textarea>
+            <button class="notes-save-btn" onclick="saveNoteVerse()">حفظ الملاحظة</button>
+        </div>
+
+        <!-- ========= نافذة تفاصيل الآية ========= -->
+        <div id="verse-details-overlay" onclick="closeVerseDetails()"></div>
+        <div id="verse-details-sheet">
+            <div class="details-title">تفاصيل الآية</div>
+            <div class="details-item">
+                <span class="details-label">السورة</span>
+                <span class="details-value" id="detail-surah"></span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">رقم السورة</span>
+                <span class="details-value" id="detail-surah-id"></span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">رقم الآية</span>
+                <span class="details-value" id="detail-verse"></span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">الجزء</span>
+                <span class="details-value" id="detail-juz"></span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">الحزب</span>
+                <span class="details-value" id="detail-hizb"></span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">الصفحة (تقريبي)</span>
+                <span class="details-value" id="detail-page"></span>
+            </div>
+        </div>
+
+        <!-- ========= نافذة المفضلة ========= -->
+        <div id="favorites-overlay" onclick="closeFavorites()"></div>
+        <div id="favorites-sheet">
+            <div class="fav-title">الآيات المفضلة</div>
+            <div class="fav-list" id="fav-list"></div>
+            <button class="fav-close-btn" onclick="closeFavorites()">إغلاق</button>
+        </div>
+
+        <!-- ========= نافذة الإعدادات ========= -->
+        <div id="settings-overlay" onclick="closeSettings()"></div>
+        <div id="settings-sheet">
+            <div class="settings-title">الإعدادات</div>
+            <div class="settings-list">
+                <div class="settings-item">
+                    <span>حجم النص</span>
+                    <div class="font-controls">
+                        <button onclick="decreaseFontSize()">A-</button>
+                        <span id="font-size-display">1.8rem</span>
+                        <button onclick="increaseFontSize()">A+</button>
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <span>رابط الملفات الصوتية</span>
+                    <input type="text" id="audio-url-input" placeholder="رابط الخادم">
+                </div>
+            </div>
+            <div class="settings-item" style="justify-content:flex-end">
+                <button class="settings-btn" onclick="resetSettings()">إعادة الضبط</button>
+            </div>
+            <button class="settings-close-btn" onclick="closeSettings()">إغلاق</button>
+        </div>
+
+        <!-- ========= نافذة عن التطبيق ========= -->
         <div class="custom-modal" id="modal-about">
             <h3>عن التطبيق</h3>
             <p>هذا التطبيق هو مصحف إلكتروني مخصص لقراءة القرآن الكريم مع تفسير "تقريب القرآن" للسيد محمد الحسيني الشيرازي (رحمه الله).<br><br>
