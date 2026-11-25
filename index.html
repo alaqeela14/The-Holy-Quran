@@ -58,33 +58,26 @@
 <h2 class="verse-options-title" id="verse-options-title">خيارات الآية</h2>
 <div class="verse-options-content">
 <button type="button" class="opt-btn" onclick="playVerseAudio(state.verseCtx.id, state.verseCtx.num)" aria-label="تشغيل تفسير الآية صوتياً">
-🔊 التفسير الصوتي
-</button>
-<button type="button" class="opt-btn" onclick="listenRange(state.verseCtx.id, state.verseCtx.num)" aria-label="استماع من هذه الآية إلى نهاية السورة">
-🎧 استماع إلى نهاية السورة
-</button>
-<button type="button" class="opt-btn" onclick="playVerseRecitation(state.verseCtx.id, state.verseCtx.num)" aria-label="تلاوة الآية المحددة">
-📖 استماع الآية
+<span class="opt-icon">◇</span><span class="opt-label">التفسير الصوتي</span>
 </button>
 <button type="button" class="opt-btn" onclick="showVerseTafsir(state.verseCtx.id, state.verseCtx.num)" aria-label="عرض التفسير النصي">
-📝 تفسير (نص)
+<span class="opt-icon">▤</span><span class="opt-label">تفسير (نص)</span>
 </button>
 <button type="button" class="opt-btn" onclick="addVerseNote(state.verseCtx.id, state.verseCtx.num)" aria-label="إضافة ملاحظة شخصية للآية">
-📌 ملاحظة
+<span class="opt-icon">▣</span><span class="opt-label">ملاحظة</span>
 </button>
 <button type="button" class="opt-btn" onclick="toggleVerseFavorite(state.verseCtx.id, state.verseCtx.num)" aria-label="إضافة الآية للمفضلة">
-⭐ تفضيل
+<span class="opt-icon">☆</span><span class="opt-label">تفضيل</span>
 </button>
 <button type="button" class="opt-btn" onclick="showVerseDetails(state.verseCtx.id, state.verseCtx.num)" aria-label="عرض تفاصيل الآية">
-ℹ️ تفاصيل الآية
+<span class="opt-icon">⌕</span><span class="opt-label">تفاصيل الآية</span>
 </button>
 <button type="button" class="opt-btn" onclick="shareVerse(state.verseCtx.id, state.verseCtx.num)" aria-label="مشاركة الآية">
-📤 مشاركة النص والصورة
+<span class="opt-icon">●</span><span class="opt-label">مشاركة الصوت والصورة</span>
 </button>
 <button type="button" class="opt-btn" onclick="copyVerseText(state.verseCtx.id, state.verseCtx.num)" aria-label="نسخ نص الآية">
-📋 نسخ
+<span class="opt-icon">▢</span><span class="opt-label">نسخ</span>
 </button>
-<button type="button" class="opt-btn opt-close" onclick="closeVerseOptions()">إغلاق</button>
 </div>
 </section>
 
