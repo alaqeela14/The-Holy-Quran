@@ -95,14 +95,48 @@ function shareVerse(surahId,verseNum){closeVerseOptions();const s=quranData[sura
 function showToast(msg){const t=document.getElementById("toast");if(t){t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2000);}}
 
 function cancelPress(){if(state.pressTimer){clearTimeout(state.pressTimer);state.pressTimer=null;}if(state.pressed){state.pressed.classList.remove("pressing");state.pressed=null;}}
-function pointerDown(e){
- const target=e.target.closest(".verse,.basmala");if(!target)return;cancelPress();state.pressed=target;target.classList.add("pressing");
- const id=state.current;
- const num=Number(target.dataset.num||0);
- const tafsirText=target.dataset.tafsir||"";
- state.verseCtx={id,num,text:target.dataset.text||"",tafsir:tafsirText};
- state.pressTimer=setTimeout(()=>{if(state.pressTimer&&state.pressed){state.pressTimer=null;state.pressed.classList.remove("pressing");state.pressed=null;openVerseOptions();}},700);
+
+function openVerseOptions(){
+ closeTafsir();
+ const ov=document.getElementById("verse-options-overlay");
+ const sh=document.getElementById("verse-options-sheet");
+ const titleEl=document.getElementById("verse-options-title");
+ if(!ov||!sh){console.error("verse-options elements not found");return;}
+ ov.classList.add("active");ov.setAttribute("aria-hidden","false");
+ sh.classList.add("active");sh.setAttribute("aria-hidden","false");
+ if(titleEl&&state.verseCtx){titleEl.textContent="آية "+state.verseCtx.num+" · سورة "+state.verseCtx.id;}
+ console.log("Verse options opened for surah",state.verseCtx.id,"verse",state.verseCtx.num);
 }
+
+function closeVerseOptions(){
+ const ov=document.getElementById("verse-options-overlay");
+ const sh=document.getElementById("verse-options-sheet");
+ if(ov){ov.classList.remove("active");ov.setAttribute("aria-hidden","true");}
+ if(sh){sh.classList.remove("active");sh.setAttribute("aria-hidden","true");}
+ state.verseCtx=null;
+}
+
+function pointerDown(e){
+ try{
+  if(!state.current){console.warn("No surah open");return;}
+  const target=e.target.closest(".verse,.basmala");if(!target)return;
+  cancelPress();state.pressed=target;target.classList.add("pressing");
+  const num=Number(target.dataset.num||0);
+  const tafsirText=target.dataset.tafsir||"";
+  state.verseCtx={id:state.current,num,text:target.dataset.text||"",tafsir:tafsirText};
+  console.log("Pointer down on verse",num,"of surah",state.current);
+  state.pressTimer=setTimeout(()=>{
+   if(state.pressTimer&&state.pressed){
+    state.pressTimer=null;
+    state.pressed.classList.remove("pressing");
+    state.pressed=null;
+    openVerseOptions();
+   }
+  },700);
+ }catch(err){console.error("pointerDown error:",err);}
+}
+
+function stopAudio(){if(state.currentAudio){try{state.currentAudio.pause();state.currentAudio.src="";}catch(_){}state.currentAudio=null;}const ap=document.getElementById("audio-player");if(ap){ap.classList.remove("active","stop");ap.style.display="none";ap.textContent="🔊";}}
 function showTafsir(text){tafsirText.textContent=text&&text.trim()?text:"لم يُدرج تفسير هذه الآية في قاعدة البيانات الحالية.";tafsirOverlay.classList.add("active");tafsirSheet.classList.add("active");tafsirSheet.setAttribute("aria-hidden","false");}
 function closeTafsir(){cancelPress();tafsirOverlay.classList.remove("active");tafsirSheet.classList.remove("active");tafsirSheet.setAttribute("aria-hidden","true");}
 function saveCurrentSurah(){
