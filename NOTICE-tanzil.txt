@@ -1,0 +1,12 @@
+QURAN TEXT ATTRIBUTION
+
+Source: Tanzil Project
+Website: https://tanzil.net
+Text edition: Uthmani, Hafs
+Source download: https://tanzil.net/download/
+
+Copyright (C) 2007-2024 Tanzil Project.
+
+The Quran text in data.js and data-XX.js is reproduced verbatim from the Tanzil Uthmani text.
+It must not be modified. If redistributed, retain this notice and link to https://tanzil.net,
+in accordance with the Tanzil terms of use: https://tanzil.net/docs/tanzil_license
