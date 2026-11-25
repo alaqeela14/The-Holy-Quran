@@ -47,8 +47,8 @@ button,input{font:inherit}button{cursor:pointer}
 #verse-options-sheet{position:absolute;top:50%;left:50%;bottom:auto;width:min(90%,440px);aspect-ratio:1/1;background:#fff;border-radius:18px;padding:16px 12px;transform:translate(-50%,-50%) scale(.96);transition:transform .28s cubic-bezier(.16,.84,.32,1.12);z-index:63;max-height:88%;display:flex;flex-direction:column;box-shadow:0 8px 24px #0003}
 #verse-options-sheet.active{transform:translate(-50%,-50%) scale(1)}
 .verse-options-title{font-weight:800;font-size:1.12rem;color:var(--primary-dark);text-align:center;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border-color)}
-.verse-options-content{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:6px;padding:4px 0}
-.opt-btn{min-width:0;min-height:0;padding:8px 5px;border:0;border-radius:10px;background:#fff;color:var(--text-dark);font-size:.9rem;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;transition:.12s;font-family:inherit;white-space:normal;line-height:1.4}.opt-icon{font-family:serif;font-size:2rem;color:#7a6b5d;line-height:1}.opt-label{display:block;font-size:.9rem;line-height:1.4;text-align:center}
+.verse-options-content{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:2px;padding:4px 0}
+.opt-btn{min-width:0;min-height:0;padding:4px 5px;border:0;border-radius:10px;background:#fff;color:var(--text-dark);font-size:.9rem;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;transition:.12s;font-family:inherit;white-space:normal;line-height:1.4}.opt-icon{font-family:serif;font-size:2rem;color:#7a6b5d;line-height:1}.opt-label{display:block;font-size:.9rem;line-height:1.4;text-align:center}
 .opt-btn:hover{background:#f7f3eb}
 .opt-btn:active{background:#e6dfcf}
 .opt-close{background:var(--primary-color);color:#fff;border:0;text-align:center;justify-content:center;font-weight:700;margin-top:6px}
