@@ -15,7 +15,7 @@ const sidebarOverlay=document.getElementById("sidebar-overlay");
 const favoriteButton=document.getElementById("favorite-btn");
 const BASMALA="بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
 const ARABIC_DIGITS="٠١٢٣٤٥٦٧٨٩";
-const state={current:null,favorites:loadFavorites(),favoritesOnly:false,pressTimer:null,pressed:null,fontSize:loadFontSize(),verseCtx:null,verseFavorites:loadVerseFavorites(),verseNotes:loadVerseNotes(),currentAudio:null,audioRange:null};
+const state={current:null,favorites:loadFavorites(),favoritesOnly:false,pressTimer:null,pressed:null,pressStart:null,fontSize:loadFontSize(),verseCtx:null,verseFavorites:loadVerseFavorites(),verseNotes:loadVerseNotes(),currentAudio:null,audioRange:null};
 
 function digits(value){return String(value).replace(/\d/g,d=>ARABIC_DIGITS[Number(d)]);}
 function normalize(value){
@@ -94,7 +94,7 @@ function copyVerseText(surahId,verseNum){closeVerseOptions();const s=quranData[s
 function shareVerse(surahId,verseNum){closeVerseOptions();const s=quranData[surahId];const v=s&&s.verses&&s.verses[verseNum-1];if(!v||!v.text){alert("لا يوجد نص للمشاركة.");return;}const text="سورة "+(s?s.name:"")+" - الآية "+verseNum+"\n"+v.text+"\n"+(v.tafsir?"\nالتفسير: "+v.tafsir:"")+"\n--- من تطبيق تقريب القرآن";const shareData={title:"سورة "+(s?s.name:"")+" - الآية "+verseNum,text:text};if(navigator.share){navigator.share(shareData).catch(_=>{});return;}closeVerseOptions();showModal("custom-share");document.getElementById("modal-custom-share-preview").textContent=text;}
 function showToast(msg){const t=document.getElementById("toast");if(t){t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2000);}}
 
-function cancelPress(){if(state.pressTimer){clearTimeout(state.pressTimer);state.pressTimer=null;}if(state.pressed){state.pressed.classList.remove("pressing");state.pressed=null;}}
+function cancelPress(){if(state.pressTimer){clearTimeout(state.pressTimer);state.pressTimer=null;}if(state.pressed){state.pressed.classList.remove("pressing");state.pressed=null;}state.pressStart=null;}
 
 function openVerseOptions(){
  closeTafsir();
@@ -120,7 +120,7 @@ function pointerDown(e){
  try{
   if(!state.current){console.warn("No surah open");return;}
   const target=e.target.closest(".verse,.basmala");if(!target)return;
-  cancelPress();state.pressed=target;target.classList.add("pressing");
+  cancelPress();state.pressed=target;state.pressStart={x:e.clientX,y:e.clientY};target.classList.add("pressing");
   const num=Number(target.dataset.num||0);
   const tafsirText=target.dataset.tafsir||"";
   state.verseCtx={id:state.current,num,text:target.dataset.text||"",tafsir:tafsirText};
@@ -150,7 +150,15 @@ function adjustFontSize(delta){state.fontSize=Math.max(1.4,Math.min(2.8,Math.rou
 function showModal(type){toggleMenu(false);const el=document.getElementById("modal-"+type);if(el){el.classList.add("active");el.setAttribute("aria-hidden","false");}}
 function closeModal(type){const el=document.getElementById("modal-"+type);if(el){el.classList.remove("active");el.setAttribute("aria-hidden","true");}}
 function showError(message){appStatus.hidden=false;appStatus.textContent=message;}
-quran.addEventListener("pointerdown",pointerDown);quran.addEventListener("pointerup",cancelPress);quran.addEventListener("pointercancel",cancelPress);quran.addEventListener("pointerleave",cancelPress);quran.addEventListener("pointermove",cancelPress,{passive:true});
+quran.addEventListener("pointerdown",pointerDown);
+quran.addEventListener("pointerup",cancelPress);
+quran.addEventListener("pointercancel",cancelPress);
+quran.addEventListener("pointerleave",e=>{if(e.pointerType!=="touch")cancelPress();});
+quran.addEventListener("pointermove",e=>{
+ if(!state.pressStart||!state.pressTimer)return;
+ const dx=e.clientX-state.pressStart.x,dy=e.clientY-state.pressStart.y;
+ if(Math.hypot(dx,dy)>12)cancelPress();
+},{passive:true});
 quran.addEventListener("contextmenu",e=>{if(e.target.closest(".verse,.basmala"))e.preventDefault();});
 window.addEventListener("keydown",e=>{if(e.key==="Escape"){closeTafsir();toggleMenu(false);document.querySelectorAll(".custom-modal.active").forEach(x=>{x.classList.remove("active");x.setAttribute("aria-hidden","true");});closeSurah();}});
 window.addEventListener("click",e=>{if(e.target.classList.contains("custom-modal")){e.target.classList.remove("active");e.target.setAttribute("aria-hidden","true");}});
