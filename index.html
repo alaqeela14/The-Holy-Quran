@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a4d2e">
+<meta name="description" content="مصحف إلكتروني لقراءة القرآن الكريم مع تفسير تقريب القرآن.">
+<title>القرآن الكريم | تقريب القرآن</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app-container">
+<div id="sidebar-overlay" onclick="toggleMenu(false)" aria-hidden="true"></div>
+<aside id="sidebar" aria-label="القائمة الرئيسية" aria-hidden="true">
+<div class="sidebar-header"><span>القائمة</span><button class="close-btn" type="button" onclick="toggleMenu(false)" aria-label="إغلاق القائمة">×</button></div>
+<ul class="sidebar-menu">
+<li><button type="button" class="sidebar-action" onclick="showAllSurahs()">🏠 الرئيسية (الفهرس)</button></li>
+<li><button type="button" class="sidebar-action" onclick="showFavorites()">⭐ السور المفضلة</button></li>
+<li><button type="button" class="sidebar-action" onclick="showModal('instructions')">ℹ️ تعليمات الاستخدام</button></li>
+<li><button type="button" class="sidebar-action" onclick="showModal('settings')">⚙️ إعدادات القراءة</button></li>
+<li><button type="button" class="sidebar-action" onclick="showModal('about')">📖 عن التطبيق</button></li>
+</ul>
+<div class="sidebar-footer">القرآن الكريم · تقريب القرآن</div>
+</aside>
+<main id="index-screen">
+<header class="header-index">
+<button class="menu-btn" type="button" onclick="toggleMenu()" aria-label="فتح القائمة">☰</button>
+<div class="header-titles"><h1>القرآن الكريم</h1><h2>وتفسير تقريب القرآن للسيد محمد الحسيني الشيرازي رحمه الله</h2></div>
+<div class="header-spacer"></div>
+</header>
+<div class="search-container"><input type="search" placeholder="ابحث عن سورة أو رقمها..." id="search-input" oninput="renderSurahs(this.value)" aria-label="البحث عن سورة"></div>
+<div id="list-status" class="list-status" hidden></div>
+<div class="app-status" id="app-status" role="status" aria-live="polite" hidden></div>
+<div class="surah-list" id="surah-list" aria-live="polite"></div>
+</main>
+<section id="reading-screen" aria-label="قراءة السورة" aria-hidden="true">
+<header class="header-reading">
+<button class="back-btn" type="button" onclick="closeSurah()" aria-label="العودة إلى الفهرس">➜</button>
+<div class="reading-heading"><div class="surah-title" id="reading-title">سورة الفاتحة</div><div class="source-info">تفسير: تقريب القرآن</div></div>
+<button class="favorite-btn" id="favorite-btn" type="button" onclick="toggleFavorite()" aria-label="إضافة إلى المفضلة" aria-pressed="false">☆</button>
+</header>
+<div class="quran-text-container" id="reading-scroll"><div class="quran-text" id="quran-text"></div></div>
+<button class="fab-save" type="button" onclick="saveCurrentSurah()" title="حفظ السورة نصياً" aria-label="حفظ السورة نصياً">⬇</button>
+</section>
+<div id="tafsir-overlay" onclick="closeTafsir()" aria-hidden="true"></div>
+<section id="tafsir-sheet" role="dialog" aria-modal="true" aria-labelledby="tafsir-heading" aria-hidden="true">
+<div class="sheet-handle"></div><h2 class="tafsir-title" id="tafsir-heading">تفسير الآية</h2><div class="tafsir-content" id="tafsir-text"></div>
+<button class="modal-close" type="button" onclick="closeTafsir()">إغلاق</button>
+</section>
+
+<!-- قائمة خيارات الآية (الضغط المطول) -->
+<div id="verse-options-overlay" onclick="closeVerseOptions()" aria-hidden="true"></div>
+<section id="verse-options-sheet" role="dialog" aria-modal="true" aria-labelledby="verse-options-title" aria-hidden="true">
+<div class="sheet-handle"></div>
+<h2 class="verse-options-title" id="verse-options-title">خيارات الآية</h2>
+<div class="verse-options-content">
+<button type="button" class="opt-btn" onclick="playVerseAudio(state.verseCtx.id, state.verseCtx.num)" aria-label="تشغيل تفسير الآية صوتياً">
+🔊 التفسير الصوتي
+</button>
+<button type="button" class="opt-btn" onclick="listenRange(state.verseCtx.id, state.verseCtx.num)" aria-label="استماع من هذه الآية إلى نهاية السورة">
+🎧 استماع إلى نهاية السورة
+</button>
+<button type="button" class="opt-btn" onclick="playVerseRecitation(state.verseCtx.id, state.verseCtx.num)" aria-label="تلاوة الآية المحددة">
+📖 استماع الآية
+</button>
+<button type="button" class="opt-btn" onclick="showVerseTafsir(state.verseCtx.id, state.verseCtx.num)" aria-label="عرض التفسير النصي">
+📝 تفسير (نص)
+</button>
+<button type="button" class="opt-btn" onclick="addVerseNote(state.verseCtx.id, state.verseCtx.num)" aria-label="إضافة ملاحظة شخصية للآية">
+📌 ملاحظة
+</button>
+<button type="button" class="opt-btn" onclick="toggleVerseFavorite(state.verseCtx.id, state.verseCtx.num)" aria-label="إضافة الآية للمفضلة">
+⭐ تفضيل
+</button>
+<button type="button" class="opt-btn" onclick="showVerseDetails(state.verseCtx.id, state.verseCtx.num)" aria-label="عرض تفاصيل الآية">
+ℹ️ تفاصيل الآية
+</button>
+<button type="button" class="opt-btn" onclick="shareVerse(state.verseCtx.id, state.verseCtx.num)" aria-label="مشاركة الآية">
+📤 مشاركة النص والصورة
+</button>
+<button type="button" class="opt-btn" onclick="copyVerseText(state.verseCtx.id, state.verseCtx.num)" aria-label="نسخ نص الآية">
+📋 نسخ
+</button>
+<button type="button" class="opt-btn opt-close" onclick="closeVerseOptions()">إغلاق</button>
+</div>
+</section>
+
+<!-- مربع إضافة ملاحظة -->
+<section class="custom-modal" id="modal-note" role="dialog" aria-modal="true" aria-hidden="true">
+<h3>ملاحظة شخصية</h3>
+<textarea id="note-text" rows="4" placeholder="اكتب ملاحظتك لهذه الآية..."></textarea>
+<div class="modal-actions">
+<button type="button" onclick="saveVerseNote()">حفظ الملاحظة</button>
+<button type="button" onclick="closeModal('note')">إلغاء</button>
+</div>
+</section>
+<section class="custom-modal" id="modal-instructions" role="dialog" aria-modal="true" aria-hidden="true">
+<h3>تعليمات الاستخدام</h3><p>١. اختر السورة من الفهرس لفتحها.</p><p>٢. اضغط مطولاً على الآية لعرض تفسيرها.</p><p>٣. اضغط زر النجمة لإضافة السورة إلى المفضلة.</p><p>٤. استخدم زر التنزيل لحفظ نص السورة في ملف نصي.</p><p>٥. غيّر حجم الخط من إعدادات القراءة.</p>
+<button type="button" onclick="closeModal('instructions')">حسناً، فهمت</button>
+</section>
+<section class="custom-modal" id="modal-settings" role="dialog" aria-modal="true" aria-hidden="true">
+<h3>إعدادات القراءة</h3><p>حجم خط الآيات</p><div class="modal-actions"><button type="button" onclick="adjustFontSize(-0.1)">تصغير الخط −</button><button type="button" onclick="adjustFontSize(0.1)">تكبير الخط +</button></div>
+<button type="button" onclick="closeModal('settings')">إغلاق</button>
+</section>
+<section class="custom-modal" id="modal-about" role="dialog" aria-modal="true" aria-hidden="true">
+<h3>عن التطبيق</h3><p>مصحف إلكتروني لقراءة القرآن الكريم مع النص المتاح من تفسير «تقريب القرآن» للسيد محمد الحسيني الشيرازي رحمه الله.</p><p>النص القرآني بالرسم العثماني من مشروع Tanzil، مع المحافظة عليه كما ورد في المصدر.</p>
+<button type="button" onclick="closeModal('about')">إغلاق</button>
+</section>
+<noscript><p class="noscript-message">يرجى تفعيل JavaScript لتشغيل تطبيق القرآن الكريم.</p></noscript>
+<!-- زر الصوت العائم -->
+<button id="audio-player" type="button" aria-label="إيقاف الصوت" style="display:none">🔊</button>
+<div id="toast" role="alert" aria-live="polite"></div>
+<!-- موديل المشاركة المخصص -->
+<section class="custom-modal" id="modal-custom-share" role="dialog" aria-modal="true" aria-hidden="true">
+<h3>مشاركة الآية</h3>
+<div class="share-preview" id="modal-custom-share-preview"></div>
+<div class="share-actions">
+<button type="button" onclick="closeModal('custom-share')">إغلاق</button>
+</div>
+</section>
+<!-- موديل التفاصيل المخصص -->
+<section class="custom-modal" id="modal-custom-details" role="dialog" aria-modal="true" aria-hidden="true">
+<h3>تفاصيل الآية</h3>
+<div id="modal-custom-details-content"></div>
+<div class="modal-actions"><button type="button" onclick="closeModal('custom-details')">إغلاق</button></div>
+</section>
+<!-- موديل تأكيد حفظ الملاحظة -->
+<section class="custom-modal" id="modal-note-saved" role="dialog" aria-modal="true" aria-hidden="true">
+<h3>تم الحفظ</h3><p>تم حفظ الملاحظة بنجاح.</p>
+<button type="button" onclick="closeModal('note-saved')">موافق</button>
+</section>
+</div>
+<script src="data.js"></script>
+<script src="data-01.js"></script>
+<script src="data-02.js"></script>
+<script src="data-03.js"></script>
+<script src="data-04.js"></script>
+<script src="data-05.js"></script>
+<script src="data-06.js"></script>
+<script src="data-07.js"></script>
+<script src="data-08.js"></script>
+<script src="data-09.js"></script>
+<script src="data-10.js"></script>
+<script src="data-11.js"></script>
+<script src="data-12.js"></script>
+<script src="data-13.js"></script>
+<script src="data-14.js"></script>
+<script src="data-15.js"></script>
+<script src="data-16.js"></script>
+<script src="data-17.js"></script>
+<script src="data-18.js"></script>
+<script src="data-19.js"></script>
+<script src="data-20.js"></script>
+<script src="data-21.js"></script>
+<script src="data-22.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
