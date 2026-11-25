@@ -15,7 +15,7 @@ const sidebarOverlay=document.getElementById("sidebar-overlay");
 const favoriteButton=document.getElementById("favorite-btn");
 const BASMALA="بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
 const ARABIC_DIGITS="٠١٢٣٤٥٦٧٨٩";
-const state={current:null,favorites:loadFavorites(),favoritesOnly:false,pressTimer:null,pressed:null,pressStart:null,fontSize:loadFontSize(),verseCtx:null,verseFavorites:loadVerseFavorites(),verseNotes:loadVerseNotes(),currentAudio:null,audioRange:null};
+const state={current:null,favorites:loadFavorites(),favoritesOnly:false,pressTimer:null,pressed:null,pressStart:null,fontSize:loadFontSize(),quranFont:loadQuranFont(),verseCtx:null,verseFavorites:loadVerseFavorites(),verseNotes:loadVerseNotes(),currentAudio:null,audioRange:null};
 
 function digits(value){return String(value).replace(/\d/g,d=>ARABIC_DIGITS[Number(d)]);}
 function normalize(value){
@@ -26,6 +26,9 @@ function loadFavorites(){try{const v=JSON.parse(localStorage.getItem("quran-favo
 function saveFavorites(){try{localStorage.setItem("quran-favorite-surahs",JSON.stringify([...state.favorites]));}catch(_){}}
 function loadFontSize(){try{const v=Number(localStorage.getItem("quran-font-size-v2"));return Number.isFinite(v)&&v>=1.4&&v<=2.8?v:1.4;}catch(_){return 1.4;}}
 function applyFontSize(){document.documentElement.style.setProperty("--quran-font-size",state.fontSize+"rem");}
+function loadQuranFont(){try{return localStorage.getItem("quran-font-choice")||"amiri";}catch(_){return "amiri";}}
+function setQuranFont(v){state.quranFont=v;document.documentElement.dataset.quranFont=v;try{localStorage.setItem("quran-font-choice",v);}catch(_){}}
+function applyQuranFont(){document.documentElement.dataset.quranFont=state.quranFont;const sel=document.getElementById("quran-font-select");if(sel)sel.value=state.quranFont;}
 function loadVerseFavorites(){try{const v=JSON.parse(localStorage.getItem("quran-favorite-verses")||"[]");return new Set(Array.isArray(v)?v.filter(x=>/^\d+:\d+$/.test(x)):[]);}catch(_){return new Set();}}
 function saveVerseFavorites(){try{localStorage.setItem("quran-favorite-verses",JSON.stringify([...state.verseFavorites]));return true;}catch(_){return false;}}
 function loadVerseNotes(){try{const v=JSON.parse(localStorage.getItem("quran-verse-notes")||"{}");return (v&&typeof v==="object"&&!Array.isArray(v))?v:{};}catch(_){return {};}}
@@ -61,6 +64,7 @@ function openSurah(name,id){
  state.current=id;title.textContent="سورة "+name;quran.replaceChildren();
  if(id!==1&&id!==9){const b=document.createElement("span");b.className="basmala";b.textContent=BASMALA;b.dataset.tafsir=s.basmalaTafsir||"";quran.appendChild(b);}
  s.verses.forEach((v,i)=>{
+  if(id===1&&i===0){const b=document.createElement("span");b.className="basmala";b.dataset.num=1;b.dataset.text=v.text;b.dataset.tafsir=v.tafsir||"";b.textContent=v.text+" ۞ "+digits(1);quran.appendChild(b);return;}
 	  const item=document.createElement("span");item.className="verse";item.dataset.tafsir=typeof v.tafsir==="string"?v.tafsir:"";
 	  item.dataset.num=i+1;
 	  item.dataset.text=v.text;
@@ -165,6 +169,6 @@ quran.addEventListener("pointermove",e=>{
 quran.addEventListener("contextmenu",e=>{if(e.target.closest(".verse,.basmala"))e.preventDefault();});
 window.addEventListener("keydown",e=>{if(e.key==="Escape"){closeTafsir();toggleMenu(false);document.querySelectorAll(".custom-modal.active").forEach(x=>{x.classList.remove("active");x.setAttribute("aria-hidden","true");});closeSurah();}});
 window.addEventListener("click",e=>{if(e.target.classList.contains("custom-modal")){e.target.classList.remove("active");e.target.setAttribute("aria-hidden","true");}});
-applyFontSize();
+applyFontSize();applyQuranFont();
 const dataError=validateData();
 if(dataError){showError(dataError);const p=document.createElement("p");p.className="empty-state error-state";p.textContent=dataError;list.replaceChildren(p);}else renderSurahs();
