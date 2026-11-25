@@ -33,9 +33,9 @@ new vm.Script(app,{filename:"app.js"});
 const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
 const scriptRefs=[...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m=>m[1]);
 const pageShards=scriptRefs.filter(x=>/^data-\d{2}\.js$/.test(x));
-if(JSON.stringify(pageShards)!==JSON.stringify(shards))errors.push("index.html does not load every data shard in order.");
-if(scriptRefs[0]!=="data.js"||scriptRefs[scriptRefs.length-1]!=="app.js")errors.push("HTML script loading order is invalid.");
+if(pageShards.length)errors.push("Data shards must be loaded on demand, not all during initial page load.");
+if(scriptRefs.length!==2||scriptRefs[0]!=="data.js"||scriptRefs[1]!=="app.js")errors.push("HTML must load only metadata first and app.js last.");
 for(const ref of scriptRefs)if(!fs.existsSync(path.join(root,ref)))errors.push("Missing script asset: "+ref);
 if(errors.length){console.error(errors.slice(0,50).join("\n"));process.exit(1);}
 console.log("Quran data and reader validation passed.");
-console.log("Surahs: 114 | Ayahs: "+total+" | Ayahs with tafsir: "+tafsir+" | Data shards: "+shards.length);
+console.log("Surahs: 114 | Ayahs: "+total+" | Ayahs with tafsir: "+tafsir+" | Data shards validated: "+shards.length+" (loaded on demand by the reader).");
