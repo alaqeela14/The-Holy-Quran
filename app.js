@@ -79,8 +79,10 @@ async function openSurah(name,id){
  const meta=surahsData.find(x=>x[0]===id);
  if(!meta){showError("تعذر العثور على بيانات السورة.");return;}
  appStatus.hidden=false;appStatus.textContent="جارٍ تحميل سورة "+name+"…";
- try{await ensureSurahData(id);}catch(err){showError(err&&err.message?err.message:"تعذر تحميل بيانات السورة.");return;}
- finally{appStatus.hidden=true;}
+ let loadError="";
+ try{await ensureSurahData(id);}catch(err){loadError=err&&err.message?err.message:"تعذر تحميل بيانات السورة.";}
+ appStatus.hidden=true;
+ if(loadError){showError(loadError);return;}
  const s=quranData[id];
  if(!s||!Array.isArray(s.verses)||s.verses.length!==meta[2]||s.verses.some(v=>!v||!v.text||!v.text.trim())){showError("تعذر فتح السورة بسبب نقص بياناتها. لم يتم عرض نص تجريبي.");return;}
  appStatus.hidden=true;state.current=id;title.textContent="سورة "+name;quran.replaceChildren();
