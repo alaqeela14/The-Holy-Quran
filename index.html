@@ -8,7 +8,7 @@
 <title>القرآن الكريم | تقريب القرآن</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700;800&family=Noto+Naskh+Arabic:wght@400;700&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -95,11 +95,11 @@
 <button type="button" onclick="closeModal('instructions')">حسناً، فهمت</button>
 </section>
 <section class="custom-modal" id="modal-settings" role="dialog" aria-modal="true" aria-hidden="true">
-<h3>إعدادات القراءة</h3><p>حجم خط الآيات</p><div class="modal-actions"><button type="button" onclick="adjustFontSize(-0.1)">تصغير الخط −</button><button type="button" onclick="adjustFontSize(0.1)">تكبير الخط +</button></div>
+<h3>إعدادات القراءة</h3><p>نوع خط القراءة</p><select id="quran-font-select" onchange="setQuranFont(this.value)" style="width:100%;padding:12px;margin:8px 0;border-radius:10px"><option value="amiri">أميري</option><option value="noto">نوتو نسخ</option><option value="scheherazade">شهرزاد</option></select><p>حجم خط الآيات</p><div class="modal-actions"><button type="button" onclick="adjustFontSize(-0.1)">تصغير الخط −</button><button type="button" onclick="adjustFontSize(0.1)">تكبير الخط +</button></div>
 <button type="button" onclick="closeModal('settings')">إغلاق</button>
 </section>
 <section class="custom-modal" id="modal-about" role="dialog" aria-modal="true" aria-hidden="true">
-<h3>عن التطبيق</h3><p>مصحف إلكتروني لقراءة القرآن الكريم مع النص المتاح من تفسير «تقريب القرآن» للسيد محمد الحسيني الشيرازي رحمه الله.</p><p>النص القرآني بالرسم العثماني من مشروع Tanzil، مع المحافظة عليه كما ورد في المصدر.</p>
+<h3>عن التطبيق</h3><p>مصحف إلكتروني لقراءة القرآن الكريم مع النص المتاح من تفسير «تقريب القرآن» للسيد محمد الحسيني الشيرازي رحمه الله.</p><p>النص القرآني بالرسم العثماني من مشروع Tanzil، مع المحافظة عليه كما ورد في المصدر.</p><hr><p><strong>إعداد ونشر:</strong> مؤسسة العقيلة الثقافية الخيرية.</p><p>مؤسسة ثقافية خيرية تُعنى بنشر الثقافة الإسلامية وخدمة المجتمع، ومن أهدافها نشر علوم أهل البيت عليهم السلام وتعزيز القيم الإنسانية والخيرية.</p>
 <button type="button" onclick="closeModal('about')">إغلاق</button>
 </section>
 <noscript><p class="noscript-message">يرجى تفعيل JavaScript لتشغيل تطبيق القرآن الكريم.</p></noscript>
