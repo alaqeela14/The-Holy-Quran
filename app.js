@@ -19,6 +19,14 @@ const dataShardPromises=new Map();
 const ARABIC_DIGITS="٠١٢٣٤٥٦٧٨٩";
 const state={current:null,favorites:loadFavorites(),favoritesOnly:false,pressTimer:null,pressed:null,pressStart:null,fontSize:loadFontSize(),quranFont:loadQuranFont(),verseCtx:null,verseFavorites:loadVerseFavorites(),verseNotes:loadVerseNotes(),currentAudio:null,audioRange:null};
 
+function loadNightMode(){try{return localStorage.getItem("quran-night-mode")==="true";}catch(_){return false;}}
+function toggleNightMode(){
+ const enabled=!document.body.classList.contains("night-mode");
+ document.body.classList.toggle("night-mode",enabled);
+ try{localStorage.setItem("quran-night-mode",String(enabled));}catch(_){}
+ const btn=document.getElementById("night-btn");
+ if(btn){btn.textContent=enabled?"☀":"☾";btn.setAttribute("aria-label",enabled?"إيقاف الوضع الليلي":"تفعيل الوضع الليلي");}
+}
 function digits(value){return String(value).replace(/\d/g,d=>ARABIC_DIGITS[Number(d)]);}
 function normalize(value){
  return String(value||"").replace(/[٠-٩]/g,d=>String("٠١٢٣٤٥٦٧٨٩".indexOf(d))).normalize("NFD")
