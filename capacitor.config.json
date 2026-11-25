@@ -1,0 +1,8 @@
+{
+  "appId": "org.alaqeela.quran",
+  "appName": "القرآن الكريم",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}
