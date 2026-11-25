@@ -15,25 +15,20 @@
 
     <div id="app-container">
         
-        <!-- ========= صفحة الترحيب ========= -->
         <div id="welcome-screen" class="welcome-screen active">
             <div class="welcome-content">
-                <span class="welcome-logo">📖</span>
+                <div class="welcome-mark" aria-hidden="true">۞</div>
+                <div class="welcome-org">مؤسسة العقيلة الثقافية الخيرية</div>
                 <h1 class="welcome-title">القرآن الكريم</h1>
-                <div class="welcome-subtitle">وتفسير تقريب القرآن</div>
-                <p class="welcome-desc">للسيد محمد الحسيني الشيرازي رحمه الله<br>مصحف إلكتروني مع تفسير صوتي ونصي</p>
-                
-                <div class="welcome-features">
-                    <div class="feature-item"><span class="feature-icon">🔊</span><span>تفسير صوتي لكل آية</span></div>
-                    <div class="feature-item"><span class="feature-icon">📖</span><span>تفسير نصي كامل</span></div>
-                    <div class="feature-item"><span class="feature-icon">⭐</span><span>قائمة المفضلة</span></div>
-                    <div class="feature-item"><span class="feature-icon">📝</span><span>ملاحظات شخصية</span></div>
-                    <div class="feature-item"><span class="feature-icon">🌙</span><span>وضع ليلي ونهاري</span></div>
-                    <div class="feature-item"><span class="feature-icon">🔤</span><span>تعديل حجم النص</span></div>
+                <div class="welcome-subtitle">وتفسير وتقريب القرآن إلى الأذهان</div>
+                <p class="welcome-desc">للسيد محمد الحسيني الشيرازي رحمه الله</p>
+                <p class="welcome-journey">رحلة في تلاوة كتاب الله وفهم معانيه والاستماع إلى آياته</p>
+                <button class="welcome-btn" onclick="startApp()">استكشف الأقسام</button>
+                <div class="welcome-cards">
+                    <button class="welcome-card" onclick="enterWelcomeSection('quran')"><span class="welcome-card-icon">۞</span><strong>القرآن الكريم</strong><small>قراءة الآيات</small></button>
+                    <button class="welcome-card" onclick="enterWelcomeSection('tafsir')"><span class="welcome-card-icon">▤</span><strong>التفسير</strong><small>تقريب القرآن</small></button>
+                    <button class="welcome-card" onclick="enterWelcomeSection('audio')"><span class="welcome-card-icon">♫</span><strong>القرآن الصوتي</strong><small>الاستماع والتلاوة</small></button>
                 </div>
-                
-                <button class="welcome-btn" onclick="startApp()">بدء الاستخدام</button>
-                <div class="welcome-version">الإصدار 2.0</div>
             </div>
         </div>
 
