@@ -247,8 +247,7 @@ function showTafsirSection() {
 
 function showAudioSection() {
     currentMode = 'audio';
-    saveNavigationState({ screen: 'section', mode: 'audio' });
-    sectionScreen.classList.add('active');
+    saveNavigationState({ screen: 'section', mode: 'audio' });    sectionScreen.classList.add('active');
     renderSectionSurahs();
     closeMenuIfOpen();
 }
@@ -302,7 +301,7 @@ function renderFavorites() {
 function normalizeSearchText(value) {
     return String(value || '')
         .normalize('NFKD')
-        .replace(/[\\u064B-\\u065F\\u0670\\u0640]/g, '')
+        .replace(/[\u064B-\u065F\u0670\u0640]/g, '')
         .replace(/[إأآٱ]/g, 'ا')
         .replace(/ى/g, 'ي')
         .toLowerCase()
@@ -497,8 +496,7 @@ function openSurah(surahName, surahId, specificVerseNum = null) {
             const verseNum = index + 1;
             const favClass = favorites.has(`${surahId}:${verseNum}`) ? 'favorite' : '';
 
-            if (currentMode === 'audio') {
-                html += `
+            if (currentMode === 'audio') {                html += `
                     <div class="verse-item" style="padding:12px 10px;border-bottom:1px solid var(--border-color);">
                         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
                             <div style="flex:1;min-width:0;">
@@ -747,8 +745,7 @@ function startRangeAudio() {
 async function playRangeVerses(surahId, startVerse, endVerse) {
     for (let v = startVerse; v <= endVerse; v++) {
         const audioUrl = getAudioUrl(surahId, v);
-        await playSingleAudio(audioUrl);
-    }
+        await playSingleAudio(audioUrl);    }
 }
 
 function playSingleAudio(audioUrl) {
@@ -997,8 +994,7 @@ function decreaseFontSize() {
     if (fontSize > 1.1) setFontSize(Math.max(1.1, fontSize - 0.1));
 }
 
-function toggleDarkMode() {
-    setDarkMode(!isDarkMode);
+function toggleDarkMode() {    setDarkMode(!isDarkMode);
 }
 
 // ============================================================================
