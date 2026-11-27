@@ -60,6 +60,7 @@ let isDarkMode = false;
 let fontSize = 1.45;
 let isRestoringHistory = false;
 let pressTarget = null;
+let surahRenderToken = 0;
 
 // --- تخزين محلي ---
 const FAVORITES_KEY = 'quran_favorites';
@@ -109,7 +110,7 @@ function setFontSize(size) {
     localStorage.setItem(FONT_SIZE_KEY, fontSize);
     document.documentElement.style.setProperty('--font-size-quran', fontSize + 'rem');
     document.documentElement.style.setProperty('--font-size-tafsir', Math.max(0.95, fontSize * 0.76) + 'rem');
-    if (fontSizeDisplay) fontSizeDisplay.textContent = fontSize.toFixed(2).replace(/0+$/, '').replace(/\\.$/, '') + 'rem';
+    if (fontSizeDisplay) fontSizeDisplay.textContent = Number(fontSize.toFixed(2)) + 'rem';
 }
 
 function isDarkModeEnabled() {
@@ -330,76 +331,78 @@ function openSurah(surahName, surahId, specificVerseNum = null) {
     currentSurahId = surahId;
     saveNavigationState({ screen: 'reading', mode: currentMode, surahId, verseNum: specificVerseNum || null });
     readingTitle.innerText = `سورة ${surahName}`;
-    
-    // تعيين شارة الوضع
+
     if (currentMode === 'quran') readingModeBadge.textContent = 'النص';
     else if (currentMode === 'tafsir') readingModeBadge.textContent = 'التفسير';
     else if (currentMode === 'audio') readingModeBadge.textContent = 'الصوتي';
-    
-    let contentHTML = "";
-    
-    if (quranData[surahId]) {
-        quranData[surahId].verses.forEach((verse, index) => {
-            const verseNum = index + 1;
-            
-            // إذا تم تحديد آية معينة، ن显示 فقط تلك الآية
-            if (specificVerseNum && verseNum !== specificVerseNum) return;
-            
-            const isFav = isFavorite(surahId, verseNum);
-            const favClass = isFav ? 'favorite' : '';
-            
-            if (currentMode === 'audio') {
-                // في وضع الصوت، نعرض زر تشغيل لكل آية
-                contentHTML += `
-                    <div class="verse-item" style="padding:15px; border-bottom:1px solid var(--border-color);">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div style="flex:1;">
-                                <div class="verse-number" style="margin:0 5px;">${verseNum}</div>
-                                <div style="font-size:1.2rem; margin-top:5px;">${verse.text}</div>
-                            </div>
-                            <button onclick="playSingleVerseAudio(${surahId}, ${verseNum})" style="background:var(--primary-color); color:white; border:none; border-radius:8px; padding:8px 16px; cursor:pointer;">تشغيل</button>
-                        </div>
-                    </div>
-                `;
-            } else if (currentMode === 'tafsir') {
-                // في وضع التفسير، نعرض التفسير فقط
-                contentHTML += `
-                    <span class="verse ${favClass}" 
-                          data-surah="${surahId}" 
-                          data-verse="${verseNum}" 
-                          data-text="${escapeHtml(verse.text)}"
-                          data-tafsir="${escapeHtml(verse.tafsir)}">
-                        [${verseNum}] ${verse.tafsir || "لا يوجد تفسير"} 
-                    </span> `;
-            } else {
-                // وضع النص القرآني العادي
-                contentHTML += `
-                    <span class="verse ${favClass}" 
-                          data-surah="${surahId}" 
-                          data-verse="${verseNum}" 
-                          data-text="${escapeHtml(verse.text)}"
-                          data-tafsir="${escapeHtml(verse.tafsir)}">
-                        ${verse.text} <span class="verse-number">${verseNum}</span> 
-                    </span> `;
-            }
-        });
-    } else {
-        contentHTML = `
-            <p style="text-align:center; color:var(--text-light); margin-top:20px; font-family:'Tajawal';">(بيانات السورة غير متوفرة)</p>
-        `;
-    }
-    
+
     quranTextContainer.classList.toggle('mode-tafsir', currentMode === 'tafsir');
-    quranTextContainer.innerHTML = contentHTML;
-    
-    if (currentMode !== 'audio') {
-        attachLongPressEvents();
-    }
-    
-    readingFooterText.textContent = `سورة ${surahName} - ${quranData[surahId] ? quranData[surahId].verses.length : 0} آية`;
-    
+    quranTextContainer.innerHTML = '';
     sectionScreen.classList.remove('active');
     readingScreen.classList.add('active');
+
+    const renderToken = ++surahRenderToken;
+    const surahData = quranData[surahId];
+    if (!surahData || !Array.isArray(surahData.verses)) {
+        quranTextContainer.innerHTML = '<p style="text-align:center;color:var(--text-light);margin-top:20px;font-family:Tajawal;">(بيانات السورة غير متوفرة)</p>';
+        readingFooterText.textContent = `سورة ${surahName} - 0 آية`;
+        return;
+    }
+
+    const verses = surahData.verses;
+    const favorites = new Set(getFavorites().map(item => `${item.surahId}:${item.verseNum}`));
+    const firstIndex = specificVerseNum ? Math.max(0, specificVerseNum - 1) : 0;
+    const lastIndex = specificVerseNum ? Math.min(verses.length, firstIndex + 1) : verses.length;
+    const batchSize = 40;
+
+    function renderBatch() {
+        if (renderToken !== surahRenderToken) return;
+        const batchEnd = Math.min(firstIndex + batchSize + (renderBatch.offset || 0), lastIndex);
+        let html = '';
+        for (let index = firstIndex + (renderBatch.offset || 0); index < batchEnd; index++) {
+            const verse = verses[index];
+            const verseNum = index + 1;
+            const favClass = favorites.has(`${surahId}:${verseNum}`) ? 'favorite' : '';
+
+            if (currentMode === 'audio') {
+                html += `
+                    <div class="verse-item" style="padding:12px 10px;border-bottom:1px solid var(--border-color);">
+                        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+                            <div style="flex:1;min-width:0;">
+                                <div class="verse-number" style="margin:0 5px;">${verseNum}</div>
+                                <div style="font-size:1rem;margin-top:5px;">${verse.text}</div>
+                            </div>
+                            <button onclick="playSingleVerseAudio(${surahId}, ${verseNum})" style="background:var(--primary-color);color:white;border:0;border-radius:8px;padding:8px 12px;cursor:pointer;">تشغيل</button>
+                        </div>
+                    </div>`;
+            } else if (currentMode === 'tafsir') {
+                html += `
+                    <span class="verse ${favClass}"
+                          data-surah="${surahId}"
+                          data-verse="${verseNum}"
+                          data-text="${escapeHtml(verse.text)}"
+                          data-tafsir="${escapeHtml(verse.tafsir)}">[${verseNum}] ${verse.tafsir || "لا يوجد تفسير"} </span> `;
+            } else {
+                html += `
+                    <span class="verse ${favClass}"
+                          data-surah="${surahId}"
+                          data-verse="${verseNum}"
+                          data-text="${escapeHtml(verse.text)}"
+                          data-tafsir="${escapeHtml(verse.tafsir)}">${verse.text} <span class="verse-number">${verseNum}</span> </span> `;
+            }
+        }
+
+        if (html) quranTextContainer.insertAdjacentHTML('beforeend', html);
+        renderBatch.offset = (renderBatch.offset || 0) + (batchEnd - (firstIndex + (renderBatch.offset || 0)));
+        if (firstIndex + renderBatch.offset < lastIndex) {
+            requestAnimationFrame(renderBatch);
+        }
+    }
+
+    renderBatch.offset = 0;
+    if (currentMode !== 'audio') attachLongPressEvents();
+    requestAnimationFrame(renderBatch);
+    readingFooterText.textContent = `سورة ${surahName} - ${verses.length} آية`;
 }
 
 // --- تشغيل آية واحدة صوتياً ---
