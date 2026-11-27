@@ -6,7 +6,7 @@
     <title>القرآن الكريم - تقريب القرآن</title>
     
     <!-- استدعاء خطوط عربية -->
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     
     <!-- استدعاء ملف التصميم (CSS) -->
     <link rel="stylesheet" href="style.css">
@@ -49,10 +49,25 @@
             </div>
         </div>
 
+        <!-- ========= شاشة البحث الشامل ========= -->
+        <div id="search-screen" class="section-screen">
+            <div class="section-header">
+                <button class="back-btn" onclick="closeSearchScreen()">←</button>
+                <div class="section-title">البحث الشامل</div>
+                <span aria-hidden="true"></span>
+            </div>
+            <div class="search-container">
+                <input type="search" id="global-search-input" placeholder="ابحث في السور والآيات والتفسير..." oninput="executeSearch(this.value)" autocomplete="off">
+            </div>
+            <div id="search-results" class="search-results" aria-live="polite">
+                <p class="search-hint">اكتب كلمة أو عبارة للبحث في القرآن الكريم والتفسير.</p>
+            </div>
+        </div>
+
         <!-- ========= شاشة القراءة ========= -->
         <div id="reading-screen" class="reading-screen">
             <div class="header-reading">
-                <button class="back-btn" onclick="backToSections()">←</div>
+                <button class="back-btn" onclick="backToSections()">←</button>
                 <div class="reading-info">
                     <h1 id="reading-title">سورة</h1>
                     <div class="mode-badge" id="reading-mode-badge">النص</div>
@@ -86,6 +101,8 @@
                 <li onclick="showQuranSection()"><span class="icon">📖</span> القرآن الكريم</li>
                 <li onclick="showTafsirSection()"><span class="icon">📜</span> التفسير</li>
                 <li onclick="showAudioSection()"><span class="icon">🔊</span> القرآن الصوتي</li>
+                <li onclick="openSearchScreen()"><span class="icon">🔎</span> البحث الشامل</li>
+                <li onclick="toggleDarkMode(); toggleMenu();"><span class="icon">🌙</span> الوضع الليلي</li>
                 <li onclick="showFavorites()"><span class="icon">⭐</span> المفضلة</li>
                 <li onclick="openSettings()"><span class="icon">⚙️</span> الإعدادات</li>
                 <li onclick="showModal('about')"><span class="icon">ℹ️</span> عن التطبيق</li>
