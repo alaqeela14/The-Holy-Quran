@@ -414,3 +414,28 @@ body { height: 100vh; height: 100dvh; }
     #welcome-screen .welcome-card small { font-size: .68rem; }
     .quran-text-container { padding: 12px 9px; }
 }
+
+
+/* السماح لمتصفح الهاتف بتنفيذ السحب للأسفل لتحديث الصفحة */
+html {
+    overscroll-behavior-y: auto;
+}
+
+body {
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: auto;
+}
+
+#app-container {
+    flex: 0 0 100dvh;
+}
+
+/* السماح بانتقال السحب إلى الصفحة عند الوصول إلى أعلى المحتوى */
+.welcome-screen,
+.quran-text-container,
+.surah-list,
+.sidebar-menu,
+.tafsir-content {
+    overscroll-behavior-y: auto;
+}
