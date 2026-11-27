@@ -57,7 +57,9 @@ const PRESS_DURATION = 800;
 let currentMode = 'quran';      // 'quran' | 'tafsir' | 'audio'
 let currentSurahId = null;
 let isDarkMode = false;
-let fontSize = 1.8;
+let fontSize = 1.45;
+let isRestoringHistory = false;
+let pressTarget = null;
 
 // --- تخزين محلي ---
 const FAVORITES_KEY = 'quran_favorites';
@@ -97,15 +99,17 @@ function saveNote(surahId, verseNum, text) {
 }
 
 function getFontSize() {
-    const saved = localStorage.getItem(FONT_SIZE_KEY);
-    return saved ? parseFloat(saved) : 1.8;
+    const saved = parseFloat(localStorage.getItem(FONT_SIZE_KEY));
+    // ترحيل الحجم الافتراضي القديم الكبير إلى حجم أنسب للهاتف.
+    if (!Number.isFinite(saved) || saved === 1.8) return 1.45;
+    return Math.min(2.4, Math.max(1.1, saved));
 }
 function setFontSize(size) {
-    fontSize = size;
-    localStorage.setItem(FONT_SIZE_KEY, size);
-    document.documentElement.style.setProperty('--font-size-quran', size + 'rem');
-    document.documentElement.style.setProperty('--font-size-tafsir', (size * 0.61) + 'rem');
-    if (fontSizeDisplay) fontSizeDisplay.textContent = size + 'rem';
+    fontSize = Math.min(2.4, Math.max(1.1, Number(size) || 1.45));
+    localStorage.setItem(FONT_SIZE_KEY, fontSize);
+    document.documentElement.style.setProperty('--font-size-quran', fontSize + 'rem');
+    document.documentElement.style.setProperty('--font-size-tafsir', Math.max(0.95, fontSize * 0.76) + 'rem');
+    if (fontSizeDisplay) fontSizeDisplay.textContent = fontSize.toFixed(2).replace(/0+$/, '').replace(/\\.$/, '') + 'rem';
 }
 
 function isDarkModeEnabled() {
@@ -127,6 +131,61 @@ function closeMenuIfOpen() {
     if (overlay && overlay.classList.contains('active')) overlay.classList.remove('active');
 }
 
+// --- سجل التنقل: دعم زر الرجوع في Android والمتصفح ---
+function saveNavigationState(state) {
+    if (!isRestoringHistory && window.history && window.history.pushState) {
+        window.history.pushState(state, '', window.location.href);
+    }
+}
+
+function closeTransientPanels() {
+    const pairs = [
+        [verseOptionsOverlay, verseOptionsSheet],
+        [tafsirOverlay, tafsirSheet],
+        [audioRangeOverlay, audioRangeSheet],
+        [notesOverlay, notesSheet],
+        [verseDetailsOverlay, verseDetailsSheet],
+        [favoritesOverlay, favoritesSheet],
+        [settingsOverlay, settingsSheet]
+    ];
+    pairs.forEach(([overlay, panel]) => {
+        if (overlay) overlay.classList.remove('active');
+        if (panel) panel.classList.remove('active');
+    });
+    closeMenuIfOpen();
+}
+
+window.addEventListener('popstate', (event) => {
+    const route = event.state || { screen: 'welcome' };
+    isRestoringHistory = true;
+    closeTransientPanels();
+
+    if (route.screen === 'reading') {
+        currentMode = route.mode || 'quran';
+        const surah = surahsData.find(item => item[0] === route.surahId);
+        if (surah) openSurah(surah[1], route.surahId, route.verseNum || null);
+    } else if (route.screen === 'section') {
+        readingScreen.classList.remove('active');
+        welcomeScreen.classList.remove('active');
+        sectionScreen.classList.add('active');
+        currentMode = route.mode || 'quran';
+        renderSectionSurahs();
+        stopAudio();
+    } else {
+        readingScreen.classList.remove('active');
+        sectionScreen.classList.remove('active');
+        welcomeScreen.classList.add('active');
+        stopAudio();
+    }
+    isRestoringHistory = false;
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+    if (!window.history.state || !window.history.state.screen) {
+        window.history.replaceState({ screen: 'welcome' }, '', window.location.href);
+    }
+});
+
 // --- البدء ---
 
 function startApp() {
@@ -142,7 +201,12 @@ function enterWelcomeSection(section) {
 }
 
 function backToWelcome() {
+    if (window.history.state && window.history.state.screen !== 'welcome') {
+        window.history.back();
+        return;
+    }
     sectionScreen.classList.remove('active');
+    readingScreen.classList.remove('active');
     welcomeScreen.classList.add('active');
 }
 
@@ -155,18 +219,25 @@ function toggleMenu() {
 
 function showSections() {
     currentMode = 'quran';
+    saveNavigationState({ screen: 'section', mode: 'quran' });
     sectionScreen.classList.add('active');
     renderSectionSurahs();
     closeMenuIfOpen();
 }
 
 function backToSections() {
+    if (window.history.state && window.history.state.screen === 'reading') {
+        window.history.back();
+        return;
+    }
     readingScreen.classList.remove('active');
+    sectionScreen.classList.add('active');
     stopAudio();
 }
 
 function showTafsirSection() {
     currentMode = 'tafsir';
+    saveNavigationState({ screen: 'section', mode: 'tafsir' });
     sectionScreen.classList.add('active');
     renderSectionSurahs();
     closeMenuIfOpen();
@@ -174,6 +245,7 @@ function showTafsirSection() {
 
 function showAudioSection() {
     currentMode = 'audio';
+    saveNavigationState({ screen: 'section', mode: 'audio' });
     sectionScreen.classList.add('active');
     renderSectionSurahs();
     closeMenuIfOpen();
@@ -181,6 +253,7 @@ function showAudioSection() {
 
 function showQuranSection() {
     currentMode = 'quran';
+    saveNavigationState({ screen: 'section', mode: 'quran' });
     sectionScreen.classList.add('active');
     renderSectionSurahs();
     closeMenuIfOpen();
@@ -255,6 +328,7 @@ function filterSurahs(query) {
 // --- فتح السورة ---
 function openSurah(surahName, surahId, specificVerseNum = null) {
     currentSurahId = surahId;
+    saveNavigationState({ screen: 'reading', mode: currentMode, surahId, verseNum: specificVerseNum || null });
     readingTitle.innerText = `سورة ${surahName}`;
     
     // تعيين شارة الوضع
@@ -315,6 +389,7 @@ function openSurah(surahName, surahId, specificVerseNum = null) {
         `;
     }
     
+    quranTextContainer.classList.toggle('mode-tafsir', currentMode === 'tafsir');
     quranTextContainer.innerHTML = contentHTML;
     
     if (currentMode !== 'audio') {
@@ -344,46 +419,45 @@ function playSingleVerseAudio(surahId, verseNum) {
 
 // --- تجهيز الضغط المطول ---
 function attachLongPressEvents() {
-    const verses = document.querySelectorAll('.verse');
-    
-    verses.forEach(verse => {
-        verse.addEventListener('touchstart', (e) => {
-            verse.classList.add('pressing');
-            pressTimer = setTimeout(() => {
-                showVerseOptions(verse);
-                if (navigator.vibrate) navigator.vibrate(50);
-            }, PRESS_DURATION);
-        });
+    // ربط الأحداث مرة واحدة بالحاوية بدلاً من إنشاء عدة مستمعات لكل آية.
+    if (quranTextContainer.dataset.longPressBound === 'true') return;
+    quranTextContainer.dataset.longPressBound = 'true';
 
-        verse.addEventListener('touchend', (e) => {
-            clearTimeout(pressTimer);
-            verse.classList.remove('pressing');
-        });
+    const findVerse = (target) => target && target.closest ? target.closest('.verse') : null;
+    const cancelPress = () => {
+        clearTimeout(pressTimer);
+        if (pressTarget) pressTarget.classList.remove('pressing');
+        pressTarget = null;
+    };
 
-        verse.addEventListener('touchmove', () => {
-            clearTimeout(pressTimer);
-            verse.classList.remove('pressing');
-        });
+    quranTextContainer.addEventListener('touchstart', (event) => {
+        const verse = findVerse(event.target);
+        if (!verse) return;
+        cancelPress();
+        pressTarget = verse;
+        verse.classList.add('pressing');
+        pressTimer = setTimeout(() => {
+            showVerseOptions(verse);
+            if (navigator.vibrate) navigator.vibrate(35);
+        }, PRESS_DURATION);
+    }, { passive: true });
 
-        verse.addEventListener('mousedown', (e) => {
-            e.preventDefault(); 
-            verse.classList.add('pressing');
-            pressTimer = setTimeout(() => {
-                showVerseOptions(verse);
-            }, PRESS_DURATION);
-        });
+    quranTextContainer.addEventListener('touchend', cancelPress, { passive: true });
+    quranTextContainer.addEventListener('touchcancel', cancelPress, { passive: true });
+    quranTextContainer.addEventListener('touchmove', cancelPress, { passive: true });
 
-        verse.addEventListener('mouseup', () => {
-            clearTimeout(pressTimer);
-            verse.classList.remove('pressing');
-        });
-
-        verse.addEventListener('mouseleave', () => {
-            clearTimeout(pressTimer);
-            verse.classList.remove('pressing');
-        });
-        
-        verse.addEventListener('contextmenu', (e) => e.preventDefault());
+    quranTextContainer.addEventListener('mousedown', (event) => {
+        const verse = findVerse(event.target);
+        if (!verse) return;
+        cancelPress();
+        pressTarget = verse;
+        verse.classList.add('pressing');
+        pressTimer = setTimeout(() => showVerseOptions(verse), PRESS_DURATION);
+    });
+    quranTextContainer.addEventListener('mouseup', cancelPress);
+    quranTextContainer.addEventListener('mouseleave', cancelPress);
+    quranTextContainer.addEventListener('contextmenu', (event) => {
+        if (findVerse(event.target)) event.preventDefault();
     });
 }
 
@@ -765,15 +839,11 @@ function downloadAudio() {
 // الميزة 11: التحكم في حجم النص والوضع الليلي
 // ============================================================================
 function increaseFontSize() {
-    if (fontSize < 3.0) {
-        setFontSize(fontSize + 0.2);
-    }
+    if (fontSize < 2.4) setFontSize(Math.min(2.4, fontSize + 0.1));
 }
 
 function decreaseFontSize() {
-    if (fontSize > 1.0) {
-        setFontSize(fontSize - 0.2);
-    }
+    if (fontSize > 1.1) setFontSize(Math.max(1.1, fontSize - 0.1));
 }
 
 function toggleDarkMode() {
@@ -797,7 +867,7 @@ function closeSettings() {
 }
 
 function resetSettings() {
-    setFontSize(1.8);
+    setFontSize(1.45);
     setDarkMode(false);
     AUDIO_BASE_URL = "https://YOUR_AUDIO_SERVER/audio/";
     audioUrlInput.value = AUDIO_BASE_URL;
