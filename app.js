@@ -233,6 +233,7 @@ function backToSections() {
     }
     readingScreen.classList.remove('active');
     sectionScreen.classList.add('active');
+    setFabVisibility(true);
     stopAudio();
 }
 
@@ -264,12 +265,14 @@ function showFavorites() {
     renderFavorites();
     favoritesOverlay.classList.add('active');
     favoritesSheet.classList.add('active');
+    setFabVisibility(false);
     toggleMenu();
 }
 
 function closeFavorites() {
     favoritesOverlay.classList.remove('active');
     favoritesSheet.classList.remove('active');
+    setFabVisibility(true);
 }
 
 function renderFavorites() {
@@ -293,6 +296,110 @@ function renderFavorites() {
         `;
         favList.appendChild(item);
     });
+}
+
+// --- البحث الشامل في أسماء السور والآيات والتفسير ---
+function normalizeSearchText(value) {
+    return String(value || '')
+        .normalize('NFKD')
+        .replace(/[\\u064B-\\u065F\\u0670\\u0640]/g, '')
+        .replace(/[إأآٱ]/g, 'ا')
+        .replace(/ى/g, 'ي')
+        .toLowerCase()
+        .trim();
+}
+
+function openSearchScreen() {
+    welcomeScreen.classList.remove('active');
+    sectionScreen.classList.remove('active');
+    readingScreen.classList.remove('active');
+    document.getElementById('search-screen').classList.add('active');
+    closeMenuIfOpen();
+    const input = document.getElementById('global-search-input');
+    const results = document.getElementById('search-results');
+    if (input) input.value = '';
+    if (results) results.innerHTML = '<p class="search-hint">اكتب كلمة أو عبارة للبحث في القرآن الكريم والتفسير.</p>';
+    if (input) input.focus();
+}
+
+function closeSearchScreen() {
+    document.getElementById('search-screen').classList.remove('active');
+    welcomeScreen.classList.add('active');
+}
+
+function executeSearch(rawQuery) {
+    const results = document.getElementById('search-results');
+    if (!results) return;
+    const query = normalizeSearchText(rawQuery);
+    results.innerHTML = '';
+    if (!query) {
+        results.innerHTML = '<p class="search-hint">اكتب كلمة أو عبارة للبحث في القرآن الكريم والتفسير.</p>';
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    let count = 0;
+    const maxResults = 100;
+    const addResult = (title, snippet, type, surahId, verseNum, mode) => {
+        if (count >= maxResults) return;
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'search-result';
+        const heading = document.createElement('div');
+        heading.className = 'search-result-title';
+        heading.textContent = title;
+        const body = document.createElement('div');
+        body.className = 'search-result-snippet';
+        body.textContent = String(snippet || '').slice(0, 190);
+        const label = document.createElement('div');
+        label.className = 'search-result-type';
+        label.textContent = type;
+        item.append(heading, body, label);
+        item.addEventListener('click', () => {
+            const surah = surahsData.find(entry => Number(entry[0]) === Number(surahId));
+            if (!surah) return;
+            currentMode = mode;
+            document.getElementById('search-screen').classList.remove('active');
+            openSurah(surah[1], Number(surahId), verseNum || 1);
+        });
+        fragment.appendChild(item);
+        count++;
+    };
+
+    surahsData.forEach(([id, name]) => {
+        if (count < maxResults && normalizeSearchText(name).includes(query)) {
+            addResult(`سورة ${name}`, `الانتقال إلى سورة ${name}`, 'اسم سورة', id, 1, 'quran');
+        }
+    });
+
+    Object.keys(quranData || {}).forEach(id => {
+        if (count >= maxResults) return;
+        const data = quranData[id];
+        if (!data || !Array.isArray(data.verses)) return;
+        const surah = surahsData.find(entry => Number(entry[0]) === Number(id));
+        const surahName = surah ? surah[1] : `السورة ${id}`;
+        data.verses.forEach((verse, index) => {
+            if (count >= maxResults) return;
+            if (normalizeSearchText(verse.text).includes(query)) {
+                addResult(`${surahName} - الآية ${index + 1}`, verse.text, 'نتيجة في نص القرآن', id, index + 1, 'quran');
+            }
+            if (count < maxResults && normalizeSearchText(verse.tafsir).includes(query)) {
+                addResult(`${surahName} - الآية ${index + 1}`, verse.tafsir, 'نتيجة في التفسير', id, index + 1, 'tafsir');
+            }
+        });
+    });
+
+    if (count === 0) {
+        results.innerHTML = '<p class="search-hint">لم نعثر على نتائج مطابقة.</p>';
+    } else {
+        results.appendChild(fragment);
+        if (count === maxResults) {
+            const note = document.createElement('p');
+            note.className = 'search-hint';
+            note.textContent = 'عُرضت أول 100 نتيجة. أضف كلمات أكثر لتضييق البحث.';
+            results.appendChild(note);
+        }
+    }
 }
 
 // --- عرض السور حسب القسم ---
@@ -350,9 +457,35 @@ function openSurah(surahName, surahId, specificVerseNum = null) {
     }
 
     const verses = surahData.verses;
+    if (currentMode === 'audio') {
+        const audioUrl = surahData.audioUrl || (typeof surahAudioData !== 'undefined' && surahAudioData[surahId] ? surahAudioData[surahId].audioUrl : '');
+        if (!audioUrl) {
+            quranTextContainer.innerHTML = '<p class="search-hint">لا يتوفر رابط صوتي لهذه السورة حالياً.</p>';
+        } else {
+            quranTextContainer.innerHTML = `
+                <section class="audio-surah-card">
+                    <h2>تلاوة سورة ${escapeHtml(surahName)}</h2>
+                    <p>استمع إلى السورة كاملة من خلال مشغل الصوت.</p>
+                    <audio id="surah-audio-player" class="audio-surah-player" controls preload="none">
+                        <source src="${escapeHtml(audioUrl)}" type="audio/mpeg">
+                        متصفحك لا يدعم تشغيل الصوت.
+                    </audio>
+                    <p id="surah-audio-status" role="status">القارئ: مشاري العفاسي</p>
+                </section>`;
+            currentAudio = document.getElementById('surah-audio-player');
+            currentAudio.addEventListener('error', () => {
+                const status = document.getElementById('surah-audio-status');
+                if (status) status.textContent = 'تعذر تحميل التلاوة. تحقق من اتصال الإنترنت.';
+            });
+        }
+        readingFooterText.textContent = `سورة ${surahName} - ${verses.length} آية`;
+        const fab = document.getElementById('fab-btn');
+        if (fab) fab.style.display = 'none';
+        return;
+    }
     const favorites = new Set(getFavorites().map(item => `${item.surahId}:${item.verseNum}`));
-    const firstIndex = specificVerseNum ? Math.max(0, specificVerseNum - 1) : 0;
-    const lastIndex = specificVerseNum ? Math.min(verses.length, firstIndex + 1) : verses.length;
+    const firstIndex = 0;
+    const lastIndex = verses.length;
     const batchSize = 40;
 
     function renderBatch() {
@@ -396,6 +529,11 @@ function openSurah(surahName, surahId, specificVerseNum = null) {
         renderBatch.offset = (renderBatch.offset || 0) + (batchEnd - (firstIndex + (renderBatch.offset || 0)));
         if (firstIndex + renderBatch.offset < lastIndex) {
             requestAnimationFrame(renderBatch);
+        } else if (specificVerseNum) {
+            requestAnimationFrame(() => {
+                const targetVerse = quranTextContainer.querySelector(`.verse[data-verse="${specificVerseNum}"]`);
+                if (targetVerse) targetVerse.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
         }
     }
 
@@ -514,11 +652,13 @@ function showVerseOptions(verseEl) {
     
     verseOptionsOverlay.classList.add('active');
     verseOptionsSheet.classList.add('active');
+    setFabVisibility(false);
 }
 
 function closeVerseOptions() {
     verseOptionsOverlay.classList.remove('active');
     verseOptionsSheet.classList.remove('active');
+    setFabVisibility(true);
 }
 
 // ============================================================================
@@ -578,11 +718,13 @@ function openAudioRange() {
     
     audioRangeOverlay.classList.add('active');
     audioRangeSheet.classList.add('active');
+    setFabVisibility(false);
 }
 
 function closeAudioRange() {
     audioRangeOverlay.classList.remove('active');
     audioRangeSheet.classList.remove('active');
+    setFabVisibility(true);
 }
 
 function startRangeAudio() {
@@ -645,11 +787,13 @@ function showTextTafsir() {
     tafsirText.innerText = currentVerse.tafsir || "لا يوجد تفسير متاح لهذه الآية.";
     tafsirOverlay.classList.add('active');
     tafsirSheet.classList.add('active');
+    setFabVisibility(false);
 }
 
 function closeTafsir() {
     tafsirOverlay.classList.remove('active');
     tafsirSheet.classList.remove('active');
+    setFabVisibility(true);
 }
 
 // ============================================================================
@@ -664,11 +808,13 @@ function openNotes() {
     
     notesOverlay.classList.add('active');
     notesSheet.classList.add('active');
+    setFabVisibility(false);
 }
 
 function closeNotes() {
     notesOverlay.classList.remove('active');
     notesSheet.classList.remove('active');
+    setFabVisibility(true);
 }
 
 function saveNoteVerse() {
@@ -716,11 +862,13 @@ function showVerseDetails() {
     
     verseDetailsOverlay.classList.add('active');
     verseDetailsSheet.classList.add('active');
+    setFabVisibility(false);
 }
 
 function closeVerseDetails() {
     verseDetailsOverlay.classList.remove('active');
     verseDetailsSheet.classList.remove('active');
+    setFabVisibility(true);
 }
 
 function calculateJuz(surahId, verseNum) {
@@ -861,12 +1009,14 @@ function openSettings() {
     fontSizeDisplay.textContent = fontSize + 'rem';
     settingsOverlay.classList.add('active');
     settingsSheet.classList.add('active');
+    setFabVisibility(false);
     toggleMenu();
 }
 
 function closeSettings() {
     settingsOverlay.classList.remove('active');
     settingsSheet.classList.remove('active');
+    setFabVisibility(true);
 }
 
 function resetSettings() {
@@ -910,11 +1060,8 @@ function getAudioUrl(surahId, verseNum) {
 // --- إجراء الزر العائم ---
 function fabAction() {
     if (currentMode === 'audio') {
-        // في وضع الصوت، نبدأ تشغيل السورة كاملة من البداية
-        if (currentSurahId) {
-            stopAudio();
-            playRangeVerses(currentSurahId, 1, quranData[currentSurahId] ? quranData[currentSurahId].verses.length : 1);
-        }
+        const player = document.getElementById('surah-audio-player');
+        if (player) player.play().catch(() => alert('تعذر تشغيل التلاوة. تحقق من اتصال الإنترنت.'));
     } else {
         // في وضع النص، ن显示 التفسير للآية الحالية إذا كانت محددة
         if (currentVerse) {
@@ -923,6 +1070,11 @@ function fabAction() {
             alert('الرجاء اختيار آية أولاً');
         }
     }
+}
+
+function setFabVisibility(visible) {
+    const fab = document.getElementById('fab-btn');
+    if (fab) fab.style.display = visible ? '' : 'none';
 }
 
 // --- إغلاق النوافذ عند النقر خارجها ---
