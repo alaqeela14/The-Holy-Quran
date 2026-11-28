@@ -986,7 +986,7 @@ window.addEventListener('DOMContentLoaded', () => {
 (function enablePullToRefresh() {
     let startY = null;
     let activeScroller = null;
-    const scrollSelector = '.quran-text-container, .surah-list, .search-results';
+    const scrollSelector = '.quran-text-container, .tafsir-content, .surah-list, .search-results';
     document.addEventListener('touchstart', (event) => {
         if (!event.touches || event.touches.length !== 1) {
             startY = null;
