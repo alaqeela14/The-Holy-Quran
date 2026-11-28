@@ -989,3 +989,46 @@ window.addEventListener('DOMContentLoaded', () => {
     // إظهار صفحة الترحيب
     welcomeScreen.classList.add('active');
 });
+/* تحديث بالسحب للأسفل مع احترام التمرير داخل المحتوى */
+(function enablePullToRefresh() {
+    let startY = null;
+    let activeScroller = null;
+    const scrollSelector = '.quran-text-container, .surah-list, .search-results';
+    document.addEventListener('touchstart', (event) => {
+        if (!event.touches || event.touches.length !== 1) {
+            startY = null;
+            activeScroller = null;
+            return;
+        }
+        if (event.target.closest('input, textarea, button, #sidebar, .custom-modal, #verse-options-sheet, #tafsir-sheet, #settings-sheet')) {
+            startY = null;
+            activeScroller = null;
+            return;
+        }
+        activeScroller = event.target.closest(scrollSelector);
+        if (activeScroller && activeScroller.scrollTop > 0) {
+            startY = null;
+            return;
+        }
+        if (!activeScroller && window.scrollY > 0) {
+            startY = null;
+            return;
+        }
+        startY = event.touches[0].clientY;
+    }, { passive: true });
+
+    document.addEventListener('touchend', (event) => {
+        if (startY === null || !event.changedTouches || !event.changedTouches.length) return;
+        const distance = event.changedTouches[0].clientY - startY;
+        const canRefresh = !activeScroller || activeScroller.scrollTop <= 0;
+        startY = null;
+        activeScroller = null;
+        if (canRefresh && distance >= 125) window.location.reload();
+    }, { passive: true });
+
+    document.addEventListener('touchcancel', () => {
+        startY = null;
+        activeScroller = null;
+    }, { passive: true });
+})();
+
