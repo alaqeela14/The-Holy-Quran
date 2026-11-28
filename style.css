@@ -525,7 +525,7 @@ body {
 html, body {
     overscroll-behavior-y: contain;
 }
-.quran-text-container, .surah-list, .search-results {
+.quran-text-container, .tafsir-content, .surah-list, .search-results {
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
