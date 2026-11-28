@@ -28,9 +28,6 @@ const tafsirOverlay = document.getElementById('tafsir-overlay');
 const tafsirSheet = document.getElementById('tafsir-sheet');
 const tafsirText = document.getElementById('tafsir-text');
 
-const audioRangeOverlay = document.getElementById('audio-range-overlay');
-const audioRangeSheet = document.getElementById('audio-range-sheet');
-
 const notesOverlay = document.getElementById('notes-overlay');
 const notesSheet = document.getElementById('notes-sheet');
 const notesTextarea = document.getElementById('notes-textarea');
@@ -138,7 +135,6 @@ function closeTransientPanels() {
     const pairs = [
         [verseOptionsOverlay, verseOptionsSheet],
         [tafsirOverlay, tafsirSheet],
-        [audioRangeOverlay, audioRangeSheet],
         [notesOverlay, notesSheet],
         [verseDetailsOverlay, verseDetailsSheet],
         [favoritesOverlay, favoritesSheet],
@@ -960,9 +956,6 @@ window.onclick = function(event) {
     }
     if (event.target === verseOptionsOverlay) {
         closeVerseOptions();
-    }
-    if (event.target === audioRangeOverlay) {
-        closeAudioRange();
     }
     if (event.target === notesOverlay) {
         closeNotes();
