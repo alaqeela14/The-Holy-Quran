@@ -455,3 +455,78 @@ body {
 .audio-surah-player { display: block; width: 100%; margin: 22px 0 12px; }
 .tafsir-verse-green { color: #1f7a38; font-weight: bold; font-family: 'Amiri Quran', serif; }
 .tafsir-word-purple { color: #732b8a; font-weight: bold; }
+
+
+/* مشغل السورة الكامل */
+.audio-surah-card {
+    width: 100%;
+    max-width: 560px;
+    margin: 24px auto;
+    padding: 22px 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    background: var(--surface-color);
+    color: var(--text-dark);
+    text-align: center;
+    box-shadow: 0 6px 22px rgba(0,0,0,.06);
+}
+.audio-surah-card h2 {
+    margin-bottom: 8px;
+    font-family: 'Amiri', serif;
+    color: var(--primary-dark);
+}
+.audio-reciter, .audio-status {
+    color: var(--text-light);
+    font-size: .95rem;
+    margin: 8px 0 14px;
+}
+.audio-surah-card audio {
+    display: none;
+}
+.surah-audio-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin: 18px 0;
+}
+.surah-audio-controls button {
+    min-height: 44px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 8px 16px;
+    background: var(--bg-color);
+    color: var(--text-dark);
+    font: 700 1rem 'Tajawal', sans-serif;
+}
+.surah-audio-controls .audio-play-btn {
+    min-width: 125px;
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    color: #fff;
+}
+.audio-progress {
+    display: block;
+    width: 100%;
+    accent-color: var(--primary-color);
+    direction: ltr;
+    margin: 12px 0 6px;
+}
+.audio-time-row {
+    display: flex;
+    justify-content: space-between;
+    direction: ltr;
+    color: var(--text-light);
+    font-size: .85rem;
+    font-variant-numeric: tabular-nums;
+}
+
+/* السحب للتحديث دون تعطيل التمرير الداخلي */
+html, body {
+    overscroll-behavior-y: contain;
+}
+.quran-text-container, .surah-list, .search-results {
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+}
