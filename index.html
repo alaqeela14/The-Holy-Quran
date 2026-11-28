@@ -226,9 +226,19 @@
 
     </div>
 
-    <!-- استدعاء ملف البيانات (Data) -->
-    <script src="data.js"></script>
-    <!-- استدعاء ملف البرمجة (Logic) -->
-    <script src="app.js"></script>
+    <!-- تحميل بيانات القرآن على أجزاء لتسريع التنزيل على الهواتف -->
+    <script defer src="data.js"></script>
+    <script defer src="data-001-012.js"></script>
+    <script defer src="data-013-024.js"></script>
+    <script defer src="data-025-036.js"></script>
+    <script defer src="data-037-048.js"></script>
+    <script defer src="data-049-060.js"></script>
+    <script defer src="data-061-072.js"></script>
+    <script defer src="data-073-084.js"></script>
+    <script defer src="data-085-096.js"></script>
+    <script defer src="data-097-108.js"></script>
+    <script defer src="data-109-114.js"></script>
+    <!-- تشغيل التطبيق بعد اكتمال تحميل جميع البيانات -->
+    <script defer src="app.js"></script>
 </body>
 </html>
