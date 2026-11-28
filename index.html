@@ -118,15 +118,6 @@
             <div class="options-handle"></div>
             <div class="options-title">اختر إجراءً للآية</div>
             <div class="options-grid">
-                <button class="option-btn" onclick="playAudioTafsir()">
-                    <span class="icon">🔊</span><span>تفسير صوتي</span>
-                </button>
-                <button class="option-btn" onclick="openAudioRange()">
-                    <span class="icon">🎵</span><span>إستماع إلى...</span>
-                </button>
-                <button class="option-btn" onclick="playVerseOnly()">
-                    <span class="icon">▶️</span><span>إستماع الآية</span>
-                </button>
                 <button class="option-btn" onclick="showTextTafsir()">
                     <span class="icon">📖</span><span>تفسير (نص)</span>
                 </button>
@@ -145,9 +136,6 @@
                 <button class="option-btn" onclick="copyVerse()">
                     <span class="icon">📋</span><span>نسخ</span>
                 </button>
-                <button class="option-btn" onclick="downloadAudio()">
-                    <span class="icon">⬇️</span><span>تحميل صوتي</span>
-                </button>
             </div>
         </div>
 
@@ -158,7 +146,6 @@
             <div class="tafsir-title">تفسير الآية</div>
             <div class="tafsir-content" id="tafsir-text"></div>
             <div class="tafsir-actions">
-                <button class="tafsir-btn" onclick="playAudioTafsir()">🔊 تشغيل التفسير</button>
                 <button class="tafsir-btn" onclick="copyVerse()">📋 نسخ الآية</button>
             </div>
         </div>
@@ -239,10 +226,6 @@
                         <span id="font-size-display">1.8rem</span>
                         <button onclick="increaseFontSize()">A+</button>
                     </div>
-                </div>
-                <div class="settings-item">
-                    <span>رابط الملفات الصوتية</span>
-                    <input type="text" id="audio-url-input" placeholder="رابط الخادم">
                 </div>
             </div>
             <div class="settings-item" style="justify-content:flex-end">
