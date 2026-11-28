@@ -94,11 +94,11 @@ function saveNote(surahId, verseNum, text) {
 function getFontSize() {
     const saved = parseFloat(localStorage.getItem(FONT_SIZE_KEY));
     // ترحيل الحجم الافتراضي القديم الكبير إلى حجم أنسب للهاتف.
-    if (!Number.isFinite(saved) || saved === 1.8) return 1.45;
+    if (!Number.isFinite(saved) || saved === 1.8 || saved === 1.45) return 1.3;
     return Math.min(2.4, Math.max(1.1, saved));
 }
 function setFontSize(size) {
-    fontSize = Math.min(2.4, Math.max(1.1, Number(size) || 1.45));
+    fontSize = Math.min(2.4, Math.max(1.1, Number(size) || 1.3));
     localStorage.setItem(FONT_SIZE_KEY, fontSize);
     document.documentElement.style.setProperty('--font-size-quran', fontSize + 'rem');
     document.documentElement.style.setProperty('--font-size-tafsir', Math.max(0.95, fontSize * 0.76) + 'rem');
@@ -866,7 +866,7 @@ function closeSettings() {
 }
 
 function resetSettings() {
-    setFontSize(1.45);
+    setFontSize(1.3);
     setDarkMode(false);
     alert('تم إعادة الضبط الإعدادات الافتراضية');
 }
