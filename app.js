@@ -1,9 +1,6 @@
-// ============================================================================
-// إعدادات الصوت - عدل هذا الرابط حسب مكان ملفات MP3 على جهازك
-// مثال: إذا كانت الملفات في https://example.com/audio/1/1.mp3
-// ============================================================================
-let AUDIO_BASE_URL = localStorage.getItem('audio_base_url') || "https://YOUR_AUDIO_SERVER/audio/";
-const AUDIO_FILE_PATTERN = "{surahId}/{verseNum}.mp3";
+// الصوت الكامل للسورة يُحمّل من CDN موثوق عند فتح قسم الصوت.
+const SURAH_AUDIO_BASE = 'https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/';
+const SURAH_AUDIO_FALLBACK = 'https://github.com/The-Quran-Project/Quran-Audio-Chapters/raw/refs/heads/main/Data/1/';
 
 // --- بيانات السور وقاعدة البيانات ---
 // يتم تحميلها من ملف data.js قبل هذا الملف
@@ -21,7 +18,6 @@ const readingFooterText = document.getElementById('reading-footer-text');
 const readingModeBadge = document.getElementById('reading-mode-badge');
 const darkModeBtn = document.getElementById('dark-mode-btn');
 const fontSizeDisplay = document.getElementById('font-size-display');
-const audioUrlInput = document.getElementById('audio-url-input');
 
 // --- خيارات الآية ---
 const verseOptionsOverlay = document.getElementById('verse-options-overlay');
@@ -67,7 +63,6 @@ const FAVORITES_KEY = 'quran_favorites';
 const NOTES_KEY = 'quran_notes';
 const FONT_SIZE_KEY = 'quran_font_size';
 const DARK_MODE_KEY = 'quran_dark_mode';
-const AUDIO_BASE_URL_KEY = 'audio_base_url';
 
 function getFavorites() {
     try { return JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'); } catch { return []; }
@@ -457,26 +452,57 @@ function openSurah(surahName, surahId, specificVerseNum = null) {
 
     const verses = surahData.verses;
     if (currentMode === 'audio') {
-        const audioUrl = surahData.audioUrl || (typeof surahAudioData !== 'undefined' && surahAudioData[surahId] ? surahAudioData[surahId].audioUrl : '');
-        if (!audioUrl) {
-            quranTextContainer.innerHTML = '<p class="search-hint">لا يتوفر رابط صوتي لهذه السورة حالياً.</p>';
-        } else {
-            quranTextContainer.innerHTML = `
-                <section class="audio-surah-card">
-                    <h2>تلاوة سورة ${escapeHtml(surahName)}</h2>
-                    <p>استمع إلى السورة كاملة من خلال مشغل الصوت.</p>
-                    <audio id="surah-audio-player" class="audio-surah-player" controls preload="none">
-                        <source src="${escapeHtml(audioUrl)}" type="audio/mpeg">
-                        متصفحك لا يدعم تشغيل الصوت.
-                    </audio>
-                    <p id="surah-audio-status" role="status">القارئ: مشاري العفاسي</p>
-                </section>`;
-            currentAudio = document.getElementById('surah-audio-player');
-            currentAudio.addEventListener('error', () => {
+        const audioUrl = SURAH_AUDIO_BASE + surahId + '.mp3';
+        const fallbackUrl = SURAH_AUDIO_FALLBACK + surahId + '.mp3';
+        quranTextContainer.innerHTML = `
+            <section class="audio-surah-card" aria-label="مشغل سورة ${escapeHtml(surahName)}">
+                <h2>تلاوة سورة ${escapeHtml(surahName)}</h2>
+                <p class="audio-reciter">القارئ: مشاري راشد العفاسي</p>
+                <audio id="surah-audio-player" preload="metadata" playsinline>
+                    <source src="${audioUrl}" type="audio/mpeg">
+                    متصفحك لا يدعم تشغيل الصوت.
+                </audio>
+                <div class="surah-audio-controls">
+                    <button type="button" class="audio-skip-btn" onclick="seekSurahAudio(-10)" aria-label="استرجاع عشر ثوان">−10</button>
+                    <button type="button" class="audio-play-btn" id="surah-audio-toggle" onclick="toggleSurahAudio()">تشغيل</button>
+                    <button type="button" class="audio-skip-btn" onclick="seekSurahAudio(10)" aria-label="تقديم عشر ثوان">+10</button>
+                </div>
+                <input class="audio-progress" id="surah-audio-progress" type="range" min="0" max="1000" value="0" step="1" aria-label="موضع التلاوة" oninput="seekSurahAudioTo(this.value)">
+                <div class="audio-time-row"><span id="surah-audio-current">00:00</span><span id="surah-audio-duration">--:--</span></div>
+                <p id="surah-audio-status" class="audio-status" role="status">جاهز للتشغيل</p>
+            </section>`;
+        currentAudio = document.getElementById('surah-audio-player');
+        let fallbackTried = false;
+        currentAudio.addEventListener('loadedmetadata', updateSurahAudioProgress);
+        currentAudio.addEventListener('timeupdate', updateSurahAudioProgress);
+        currentAudio.addEventListener('play', () => {
+            const button = document.getElementById('surah-audio-toggle');
+            if (button) button.textContent = 'إيقاف مؤقت';
+            const status = document.getElementById('surah-audio-status');
+            if (status) status.textContent = 'التلاوة قيد التشغيل';
+        });
+        currentAudio.addEventListener('pause', () => {
+            const button = document.getElementById('surah-audio-toggle');
+            if (button) button.textContent = 'استئناف';
+        });
+        currentAudio.addEventListener('ended', () => {
+            const button = document.getElementById('surah-audio-toggle');
+            if (button) button.textContent = 'إعادة التشغيل';
+            const status = document.getElementById('surah-audio-status');
+            if (status) status.textContent = 'اكتملت تلاوة السورة';
+        });
+        currentAudio.addEventListener('error', () => {
+            if (!fallbackTried && currentAudio) {
+                fallbackTried = true;
+                currentAudio.src = fallbackUrl;
+                currentAudio.load();
                 const status = document.getElementById('surah-audio-status');
-                if (status) status.textContent = 'تعذر تحميل التلاوة. تحقق من اتصال الإنترنت.';
-            });
-        }
+                if (status) status.textContent = 'جارٍ تجربة مصدر صوتي بديل...';
+                return;
+            }
+            const status = document.getElementById('surah-audio-status');
+            if (status) status.textContent = 'تعذر تحميل التلاوة من المصدرين. تحقق من اتصال الإنترنت.';
+        });
         readingFooterText.textContent = `سورة ${surahName} - ${verses.length} آية`;
         const fab = document.getElementById('fab-btn');
         if (fab) fab.style.display = 'none';
@@ -496,17 +522,7 @@ function openSurah(surahName, surahId, specificVerseNum = null) {
             const verseNum = index + 1;
             const favClass = favorites.has(`${surahId}:${verseNum}`) ? 'favorite' : '';
 
-            if (currentMode === 'audio') {                html += `
-                    <div class="verse-item" style="padding:12px 10px;border-bottom:1px solid var(--border-color);">
-                        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
-                            <div style="flex:1;min-width:0;">
-                                <div class="verse-number" style="margin:0 5px;">${verseNum}</div>
-                                <div style="font-size:1rem;margin-top:5px;">${verse.text}</div>
-                            </div>
-                            <button onclick="playSingleVerseAudio(${surahId}, ${verseNum})" style="background:var(--primary-color);color:white;border:0;border-radius:8px;padding:8px 12px;cursor:pointer;">تشغيل</button>
-                        </div>
-                    </div>`;
-            } else if (currentMode === 'tafsir') {
+            if (currentMode === 'tafsir') {
                 html += `
                     <span class="verse ${favClass}"
                           data-surah="${surahId}"
@@ -539,21 +555,6 @@ function openSurah(surahName, surahId, specificVerseNum = null) {
     if (currentMode !== 'audio') attachLongPressEvents();
     requestAnimationFrame(renderBatch);
     readingFooterText.textContent = `سورة ${surahName} - ${verses.length} آية`;
-}
-
-// --- تشغيل آية واحدة صوتياً ---
-function playSingleVerseAudio(surahId, verseNum) {
-    const audioUrl = getAudioUrl(surahId, verseNum);
-    stopAudio();
-    try {
-        currentAudio = new Audio(audioUrl);
-        currentAudio.play().catch(err => {
-            console.error('خطأ في تشغيل الصوت:', err);
-            alert('لا يمكن تشغيل الملف الصوتي.\nتأكد من أن الرابط صحيح والملف موجود.');
-        });
-    } catch (err) {
-        alert('خطأ في تشغيل الصوت: ' + err.message);
-    }
 }
 
 // --- تجهيز الضغط المطول ---
@@ -615,15 +616,6 @@ function showVerseOptions(verseEl) {
         <div class="options-handle"></div>
         <div class="options-title">اختر إجراءً للآية ${verseNum}</div>
         <div class="options-grid">
-            <button class="option-btn" onclick="playAudioTafsir()">
-                <span class="icon">🔊</span><span>تفسير صوتي</span>
-            </button>
-            <button class="option-btn" onclick="openAudioRange()">
-                <span class="icon">🎵</span><span>إستماع إلى...</span>
-            </button>
-            <button class="option-btn" onclick="playVerseOnly()">
-                <span class="icon">▶️</span><span>إستماع الآية</span>
-            </button>
             <button class="option-btn" onclick="showTextTafsir()">
                 <span class="icon">📖</span><span>تفسير (نص)</span>
             </button>
@@ -642,9 +634,6 @@ function showVerseOptions(verseEl) {
             <button class="option-btn" onclick="copyVerse()">
                 <span class="icon">📋</span><span>نسخ</span>
             </button>
-            <button class="option-btn" onclick="downloadAudio()">
-                <span class="icon">⬇️</span><span>تحميل صوتي</span>
-            </button>
         </div>
     `;
     
@@ -657,121 +646,6 @@ function closeVerseOptions() {
     verseOptionsOverlay.classList.remove('active');
     verseOptionsSheet.classList.remove('active');
     setFabVisibility(true);
-}
-
-// ============================================================================
-// الميزة 1: التفسير الصوتي (MP3)
-// ============================================================================
-function playAudioTafsir() {
-    if (!currentVerse) return;
-    
-    closeVerseOptions();
-    
-    const audioUrl = getAudioUrl(currentVerse.surahId, currentVerse.verseNum);
-    
-    stopAudio();
-    
-    try {
-        currentAudio = new Audio(audioUrl);
-        currentAudio.play().catch(err => {
-            console.error('خطأ في تشغيل الصوت:', err);
-            alert('لا يمكن تشغيل الملف الصوتي.\nتأكد من أن الرابط صحيح والملف موجود.');
-        });
-        
-        currentAudio.addEventListener('ended', () => {
-            currentAudio = null;
-        });
-    } catch (err) {
-        alert('خطأ في تشغيل الصوت: ' + err.message);
-    }
-}
-
-// ============================================================================
-// الميزة 2: الاستماع المتقدم (نطاق)
-// ============================================================================
-function openAudioRange() {
-    if (!currentVerse) return;
-    
-    closeVerseOptions();
-    
-    const surahId = currentVerse.surahId;
-    const totalVerses = quranData[surahId] ? quranData[surahId].verses.length : 1;
-    
-    audioRangeSheet.innerHTML = `
-        <div class="range-title">إستماع من الآية ${currentVerse.verseNum} إلى</div>
-        <div class="range-labels">
-            <span>الآية ${currentVerse.verseNum}</span>
-            <span>الآية ${totalVerses}</span>
-        </div>
-        <input type="range" class="range-input" id="range-end-slider" min="${currentVerse.verseNum}" max="${totalVerses}" value="${totalVerses}">
-        <div class="range-controls">
-            <label>من الآية:</label>
-            <input type="number" id="range-start" min="1" max="${totalVerses}" value="${currentVerse.verseNum}">
-            <label>إلى الآية:</label>
-            <input type="number" id="range-end-input" min="1" max="${totalVerses}" value="${totalVerses}">
-        </div>
-        <button class="range-btn" onclick="startRangeAudio()">بدء التشغيل</button>
-        <button class="range-btn" style="background-color: var(--text-light);" onclick="closeAudioRange()">إلغاء</button>
-    `;
-    
-    audioRangeOverlay.classList.add('active');
-    audioRangeSheet.classList.add('active');
-    setFabVisibility(false);
-}
-
-function closeAudioRange() {
-    audioRangeOverlay.classList.remove('active');
-    audioRangeSheet.classList.remove('active');
-    setFabVisibility(true);
-}
-
-function startRangeAudio() {
-    const startInput = document.getElementById('range-start');
-    const endInput = document.getElementById('range-end-input');
-    const startVerse = parseInt(startInput.value);
-    const endVerse = parseInt(endInput.value);
-    
-    if (startVerse > endVerse) {
-        alert('الآية البداية يجب أن تكون أصغر من الآية النهاية');
-        return;
-    }
-    
-    closeAudioRange();
-    stopAudio();
-    
-    playRangeVerses(currentVerse.surahId, startVerse, endVerse);
-}
-
-async function playRangeVerses(surahId, startVerse, endVerse) {
-    for (let v = startVerse; v <= endVerse; v++) {
-        const audioUrl = getAudioUrl(surahId, v);
-        await playSingleAudio(audioUrl);    }
-}
-
-function playSingleAudio(audioUrl) {
-    return new Promise((resolve, reject) => {
-        stopAudio();
-        try {
-            currentAudio = new Audio(audioUrl);
-            currentAudio.play().catch(reject);
-            currentAudio.addEventListener('ended', () => {
-                currentAudio = null;
-                resolve();
-            }, { once: true });
-            currentAudio.addEventListener('error', reject);
-        } catch (err) {
-            reject(err);
-        }
-    });
-}
-
-// ============================================================================
-// الميزة 3: تشغيل الآية فقط
-// ============================================================================
-function playVerseOnly() {
-    if (!currentVerse) return;
-    closeVerseOptions();
-    playAudioTafsir();
 }
 
 // ============================================================================
@@ -965,25 +839,6 @@ function fallbackCopyTextToClipboard(text) {
 }
 
 // ============================================================================
-// الميزة 10: تحميل الملف الصوتي
-// ============================================================================
-function downloadAudio() {
-    if (!currentVerse) return;
-    closeVerseOptions();
-    
-    const audioUrl = getAudioUrl(currentVerse.surahId, currentVerse.verseNum);
-    
-    const link = document.createElement('a');
-    link.href = audioUrl;
-    link.download = `سورة_${currentVerse.surahId}_آية_${currentVerse.verseNum}.mp3`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    alert('جاري تحميل الملف الصوتي للآية ' + currentVerse.verseNum);
-}
-
-// ============================================================================
 // الميزة 11: التحكم في حجم النص والوضع الليلي
 // ============================================================================
 function increaseFontSize() {
@@ -1001,7 +856,6 @@ function toggleDarkMode() {    setDarkMode(!isDarkMode);
 // الإعدادات
 // ============================================================================
 function openSettings() {
-    audioUrlInput.value = AUDIO_BASE_URL;
     fontSizeDisplay.textContent = fontSize + 'rem';
     settingsOverlay.classList.add('active');
     settingsSheet.classList.add('active');
@@ -1018,22 +872,55 @@ function closeSettings() {
 function resetSettings() {
     setFontSize(1.45);
     setDarkMode(false);
-    AUDIO_BASE_URL = "https://YOUR_AUDIO_SERVER/audio/";
-    audioUrlInput.value = AUDIO_BASE_URL;
-    localStorage.setItem(AUDIO_BASE_URL_KEY, AUDIO_BASE_URL);
     alert('تم إعادة الضبط الإعدادات الافتراضية');
 }
 
-function saveAudioUrl() {
-    const url = audioUrlInput.value.trim();
-    if (url) {
-        AUDIO_BASE_URL = url;
-        localStorage.setItem(AUDIO_BASE_URL_KEY, url);
-        alert('تم حفظ الرابط الصوتي');
+// --- دوال مساعدة ---
+
+function formatAudioTime(seconds) {
+    if (!Number.isFinite(seconds) || seconds < 0) return '--:--';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+}
+
+function updateSurahAudioProgress() {
+    const audio = document.getElementById('surah-audio-player');
+    if (!audio) return;
+    const progress = document.getElementById('surah-audio-progress');
+    const current = document.getElementById('surah-audio-current');
+    const duration = document.getElementById('surah-audio-duration');
+    if (progress) progress.value = audio.duration ? Math.round((audio.currentTime / audio.duration) * 1000) : 0;
+    if (current) current.textContent = formatAudioTime(audio.currentTime);
+    if (duration) duration.textContent = formatAudioTime(audio.duration);
+}
+
+function toggleSurahAudio() {
+    const audio = document.getElementById('surah-audio-player');
+    if (!audio) return;
+    if (audio.paused) audio.play().catch(() => {
+        const status = document.getElementById('surah-audio-status');
+        if (status) status.textContent = 'تعذر بدء التشغيل؛ تحقق من اتصال الإنترنت.';
+    });
+    else audio.pause();
+}
+
+function seekSurahAudio(seconds) {
+    const audio = document.getElementById('surah-audio-player');
+    if (audio && Number.isFinite(audio.duration)) {
+        audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + seconds));
+        updateSurahAudioProgress();
     }
 }
 
-// --- دوال مساعدة ---
+function seekSurahAudioTo(value) {
+    const audio = document.getElementById('surah-audio-player');
+    if (audio && Number.isFinite(audio.duration)) {
+        audio.currentTime = (Number(value) / 1000) * audio.duration;
+        updateSurahAudioProgress();
+    }
+}
+
 function stopAudio() {
     if (currentAudio) {
         currentAudio.pause();
@@ -1044,13 +931,6 @@ function stopAudio() {
 function escapeHtml(text) {
     if (!text) return '';
     return text.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
-
-function getAudioUrl(surahId, verseNum) {
-    const pattern = AUDIO_FILE_PATTERN
-        .replace('{surahId}', surahId)
-        .replace('{verseNum}', verseNum);
-    return AUDIO_BASE_URL + pattern;
 }
 
 // --- إجراء الزر العائم ---
@@ -1104,14 +984,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setFontSize(getFontSize());
     setDarkMode(isDarkModeEnabled());
     
-    // استعادة رابط الصوت
-    const savedUrl = localStorage.getItem(AUDIO_BASE_URL_KEY);
-    if (savedUrl) {
-        AUDIO_BASE_URL = savedUrl;
-    }
-    if (audioUrlInput) {
-        audioUrlInput.value = AUDIO_BASE_URL;
-    }
+    // لم تعد هناك حاجة لإعداد رابط صوتي يدوي؛ مصدر السور مدمج في التطبيق.
     
     // إظهار صفحة الترحيب
     welcomeScreen.classList.add('active');
